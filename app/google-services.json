@@ -1,0 +1,39 @@
+{
+  "project_info": {
+    "project_number": "318630185161",
+    "project_id": "blogapp-b229c",
+    "storage_bucket": "blogapp-b229c.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:318630185161:android:cbc44b582de01a8601a518",
+        "android_client_info": {
+          "package_name": "it.edu.iisfalcone_righi.blog"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "318630185161-tg2bb5md9jno4q7ci33p2ces6b5nj8kb.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBiY6DsTpGbOwu_FJc2XVD_arrdGHvh-EE"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "318630185161-tg2bb5md9jno4q7ci33p2ces6b5nj8kb.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
