@@ -1,18 +1,26 @@
 package it.edu.iisfalcone_righi.blog.Activities;
 
+import android.content.Intent;
 import android.os.Bundle;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.Menu;
 import android.widget.ImageView;
 import android.widget.TextView;
 
+import android.content.Intent;
+
 import com.bumptech.glide.Glide;
+import com.bumptech.glide.request.RequestOptions;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.android.material.snackbar.Snackbar;
 import com.google.android.material.navigation.NavigationView;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 
+import androidx.annotation.NonNull;
+import androidx.annotation.StringRes;
+import androidx.core.view.GravityCompat;
 import androidx.navigation.NavController;
 import androidx.navigation.Navigation;
 import androidx.navigation.ui.AppBarConfiguration;
@@ -21,6 +29,9 @@ import androidx.drawerlayout.widget.DrawerLayout;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
 
+import it.edu.iisfalcone_righi.blog.Fragments.HomeFragment;
+import it.edu.iisfalcone_righi.blog.Fragments.ProfileFragment;
+import it.edu.iisfalcone_righi.blog.Fragments.SettingsFragment;
 import it.edu.iisfalcone_righi.blog.R;
 
 public class Home extends AppCompatActivity {
@@ -62,6 +73,36 @@ public class Home extends AppCompatActivity {
         NavigationUI.setupActionBarWithNavController(this, navController, mAppBarConfiguration);
         NavigationUI.setupWithNavController(navigationView, navController);
 
+        navigationView.setNavigationItemSelectedListener(new NavigationView.OnNavigationItemSelectedListener() {
+            @Override
+            public boolean onNavigationItemSelected(@NonNull MenuItem item) {
+                int id = item.getItemId();
+                switch (id){
+                    case R.id.nav_home:
+                        getSupportActionBar().setTitle(R.string.nav_home);
+                        getSupportFragmentManager().beginTransaction().replace(R.id.nav_host_fragment,new HomeFragment()).commit();
+                        break;
+                    case R.id.nav_profile:
+                        getSupportActionBar().setTitle(R.string.nav_profile);
+                        getSupportFragmentManager().beginTransaction().replace(R.id.nav_host_fragment,new ProfileFragment()).commit();
+                        break;
+                    case R.id.nav_settings:
+                        getSupportActionBar().setTitle(R.string.nav_settings);
+                        getSupportFragmentManager().beginTransaction().replace(R.id.nav_host_fragment,new SettingsFragment()).commit();
+                        break;
+                    case R.id.nav_signout:
+                        FirebaseAuth.getInstance().signOut();
+                        Intent loginActivity = new Intent(getApplicationContext(),LoginActivity.class);
+                        startActivity(loginActivity);
+                        finish();
+                        break;
+
+                }
+                drawer.closeDrawer(GravityCompat.START);
+                return true;
+            }
+        });
+
         updateNavHeader();
     }
 
@@ -95,7 +136,7 @@ public class Home extends AppCompatActivity {
 
         //con Glide carico l'immagine
 
-        Glide.with(this).load(currentUser.getPhotoUrl()).into(navUserPhoto);
+        Glide.with(this).load(currentUser.getPhotoUrl()).apply(RequestOptions.circleCropTransform()).into(navUserPhoto);
 
     }
 }
