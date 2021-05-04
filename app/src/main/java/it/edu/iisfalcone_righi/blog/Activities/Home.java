@@ -79,6 +79,8 @@ public class Home extends AppCompatActivity {
                 || super.onSupportNavigateUp();
     }
 
+
+
     public void updateNavHeader() {
         NavigationView navigationView = findViewById(R.id.nav_view);
         View headerView = navigationView.getHeaderView(0);
