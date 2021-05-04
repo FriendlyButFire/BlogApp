@@ -4,6 +4,8 @@
     <string name="hint_mail">Mail</string>
     <string name="hint_password">Password</string>
     <string name="hint_confirmpassword">Conferma Password</string>
+    <string name="hint_popup_title">Titolo</string>
+    <string name="hint_popup_description">Descrizione</string>
     <string name="btn_text">Registrati</string>
     <string name="title_activity_home">Home</string>
     <string name="navigation_drawer_open">Open navigation drawer</string>

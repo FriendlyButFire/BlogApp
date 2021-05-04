@@ -1,11 +1,16 @@
 package it.edu.iisfalcone_righi.blog.Activities;
 
+import android.app.Dialog;
 import android.content.Intent;
+import android.graphics.Color;
+import android.graphics.drawable.ColorDrawable;
 import android.os.Bundle;
+import android.view.Gravity;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.Menu;
 import android.widget.ImageView;
+import android.widget.ProgressBar;
 import android.widget.TextView;
 
 import android.content.Intent;
@@ -40,6 +45,12 @@ public class Home extends AppCompatActivity {
 
     FirebaseAuth mAuth;
     FirebaseUser currentUser;
+    Dialog popAddPost;
+
+    ImageView popupUserImage,popupPostImage,popupAddBtn;
+    TextView popupTitle,popupDescription;
+    ProgressBar popupClickProgress;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -48,17 +59,20 @@ public class Home extends AppCompatActivity {
         Toolbar toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
 
-        //init
+        //init firebase
 
         mAuth = FirebaseAuth.getInstance();
         currentUser = mAuth.getCurrentUser();
+
+        //init popup
+
+        initPopup();
 
         FloatingActionButton fab = findViewById(R.id.fab);
         fab.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                Snackbar.make(view, "Replace with your own action", Snackbar.LENGTH_LONG)
-                        .setAction("Action", null).show();
+                popAddPost.show();
             }
         });
         DrawerLayout drawer = findViewById(R.id.drawer_layout);
@@ -104,6 +118,37 @@ public class Home extends AppCompatActivity {
         });
 
         updateNavHeader();
+    }
+
+    private void initPopup() {
+        popAddPost = new Dialog(this);
+        popAddPost.setContentView(R.layout.popup_add_post);
+        popAddPost.getWindow().setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
+        popAddPost.getWindow().setLayout(Toolbar.LayoutParams.MATCH_PARENT,Toolbar.LayoutParams.WRAP_CONTENT);
+        popAddPost.getWindow().getAttributes().gravity = Gravity.TOP;
+
+        //init popup widget
+
+        popupUserImage = popAddPost.findViewById(R.id.popup_user_image);
+        popupPostImage = popAddPost.findViewById(R.id.popup_img);
+        popupTitle = popAddPost.findViewById(R.id.popup_title);
+        popupDescription = popAddPost.findViewById(R.id.popup_description);
+        popupAddBtn = popAddPost.findViewById(R.id.popup_add);
+        popupClickProgress = popAddPost.findViewById(R.id.popup_progressBar);
+
+        //carico l'immagine dell'user
+
+        Glide.with(this).load(currentUser.getPhotoUrl()).apply(RequestOptions.circleCropTransform()).into(popupUserImage);
+
+        //aggiungo un listener
+
+        popupAddBtn.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                popupAddBtn.setVisibility(View.INVISIBLE);
+                popupClickProgress.setVisibility(View.VISIBLE);
+            }
+        });
     }
 
     @Override
