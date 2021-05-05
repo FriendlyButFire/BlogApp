@@ -10,7 +10,7 @@
         android:id="@+id/popup_user_image"
         android:layout_width="48dp"
         android:layout_height="0dp"
-        android:background="#ffffff"
+        android:background="@color/design_default_color_on_primary"
         android:padding="8dp"
         app:layout_constraintBottom_toTopOf="@+id/popup_description"
         app:layout_constraintEnd_toEndOf="parent"
