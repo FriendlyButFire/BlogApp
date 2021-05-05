@@ -1,10 +1,14 @@
 package it.edu.iisfalcone_righi.blog.Activities;
 
+import android.Manifest;
 import android.app.Dialog;
 import android.content.Intent;
+import android.content.pm.PackageManager;
 import android.graphics.Color;
 import android.graphics.drawable.ColorDrawable;
+import android.net.Uri;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.Gravity;
 import android.view.MenuItem;
 import android.view.View;
@@ -14,17 +18,28 @@ import android.widget.ProgressBar;
 import android.widget.TextView;
 
 import android.content.Intent;
+import android.widget.Toast;
 
 import com.bumptech.glide.Glide;
 import com.bumptech.glide.request.RequestOptions;
+import com.google.android.gms.tasks.OnFailureListener;
+import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.android.material.snackbar.Snackbar;
 import com.google.android.material.navigation.NavigationView;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.storage.FirebaseStorage;
+import com.google.firebase.storage.StorageReference;
+import com.google.firebase.storage.UploadTask;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.annotation.StringRes;
+import androidx.core.app.ActivityCompat;
+import androidx.core.content.ContextCompat;
 import androidx.core.view.GravityCompat;
 import androidx.navigation.NavController;
 import androidx.navigation.Navigation;
@@ -34,9 +49,12 @@ import androidx.drawerlayout.widget.DrawerLayout;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
 
+import org.jetbrains.annotations.NotNull;
+
 import it.edu.iisfalcone_righi.blog.Fragments.HomeFragment;
 import it.edu.iisfalcone_righi.blog.Fragments.ProfileFragment;
 import it.edu.iisfalcone_righi.blog.Fragments.SettingsFragment;
+import it.edu.iisfalcone_righi.blog.Models.Post;
 import it.edu.iisfalcone_righi.blog.R;
 
 public class Home extends AppCompatActivity {
@@ -47,9 +65,12 @@ public class Home extends AppCompatActivity {
     FirebaseUser currentUser;
     Dialog popAddPost;
 
-    ImageView popupUserImage,popupPostImage,popupAddBtn;
-    TextView popupTitle,popupDescription;
+    ImageView popupUserImage, popupPostImage, popupAddBtn;
+    TextView popupTitle, popupDescription;
     ProgressBar popupClickProgress;
+    private static final int pReqCode = 2;
+    private static final int reqCode = 2;
+    private Uri pickedImgUri = null;
 
 
     @Override
@@ -67,6 +88,8 @@ public class Home extends AppCompatActivity {
         //init popup
 
         initPopup();
+
+        setupPopupImageClick();
 
         FloatingActionButton fab = findViewById(R.id.fab);
         fab.setOnClickListener(new View.OnClickListener() {
@@ -91,22 +114,22 @@ public class Home extends AppCompatActivity {
             @Override
             public boolean onNavigationItemSelected(@NonNull MenuItem item) {
                 int id = item.getItemId();
-                switch (id){
+                switch (id) {
                     case R.id.nav_home:
                         getSupportActionBar().setTitle(R.string.nav_home);
-                        getSupportFragmentManager().beginTransaction().replace(R.id.nav_host_fragment,new HomeFragment()).commit();
+                        getSupportFragmentManager().beginTransaction().replace(R.id.nav_host_fragment, new HomeFragment()).commit();
                         break;
                     case R.id.nav_profile:
                         getSupportActionBar().setTitle(R.string.nav_profile);
-                        getSupportFragmentManager().beginTransaction().replace(R.id.nav_host_fragment,new ProfileFragment()).commit();
+                        getSupportFragmentManager().beginTransaction().replace(R.id.nav_host_fragment, new ProfileFragment()).commit();
                         break;
                     case R.id.nav_settings:
                         getSupportActionBar().setTitle(R.string.nav_settings);
-                        getSupportFragmentManager().beginTransaction().replace(R.id.nav_host_fragment,new SettingsFragment()).commit();
+                        getSupportFragmentManager().beginTransaction().replace(R.id.nav_host_fragment, new SettingsFragment()).commit();
                         break;
                     case R.id.nav_signout:
                         FirebaseAuth.getInstance().signOut();
-                        Intent loginActivity = new Intent(getApplicationContext(),LoginActivity.class);
+                        Intent loginActivity = new Intent(getApplicationContext(), LoginActivity.class);
                         startActivity(loginActivity);
                         finish();
                         break;
@@ -120,11 +143,26 @@ public class Home extends AppCompatActivity {
         updateNavHeader();
     }
 
+
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        // Inflate the menu; this adds items to the action bar if it is present.
+        getMenuInflater().inflate(R.menu.home, menu);
+        return true;
+    }
+
+    @Override
+    public boolean onSupportNavigateUp() {
+        NavController navController = Navigation.findNavController(this, R.id.nav_host_fragment);
+        return NavigationUI.navigateUp(navController, mAppBarConfiguration)
+                || super.onSupportNavigateUp();
+    }
+
     private void initPopup() {
         popAddPost = new Dialog(this);
         popAddPost.setContentView(R.layout.popup_add_post);
         popAddPost.getWindow().setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
-        popAddPost.getWindow().setLayout(Toolbar.LayoutParams.MATCH_PARENT,Toolbar.LayoutParams.WRAP_CONTENT);
+        popAddPost.getWindow().setLayout(Toolbar.LayoutParams.MATCH_PARENT, Toolbar.LayoutParams.WRAP_CONTENT);
         popAddPost.getWindow().getAttributes().gravity = Gravity.TOP;
 
         //init popup widget
@@ -147,25 +185,60 @@ public class Home extends AppCompatActivity {
             public void onClick(View v) {
                 popupAddBtn.setVisibility(View.INVISIBLE);
                 popupClickProgress.setVisibility(View.VISIBLE);
+
+                //test titolo e desc
+
+                if (!popupTitle.getText().toString().isEmpty() && !popupDescription.getText().toString().isEmpty() && pickedImgUri != null) {
+                    //tutto ok
+                    //accedo allo storage di firebase per l'immagine scelta
+
+                    StorageReference storageReference = FirebaseStorage.getInstance().getReference().child("immagini_blog");
+                    StorageReference imageFilePath = storageReference.child(pickedImgUri.getLastPathSegment());
+                    imageFilePath.putFile(pickedImgUri).addOnSuccessListener(new OnSuccessListener<UploadTask.TaskSnapshot>() {
+                        @Override
+                        public void onSuccess(UploadTask.TaskSnapshot taskSnapshot) {
+                            imageFilePath.getDownloadUrl().addOnSuccessListener(new OnSuccessListener<Uri>() {
+                                @Override
+                                public void onSuccess(Uri uri) {
+                                    String imageDownloadLink = uri.toString();
+                                    //creo l'oggetto post
+
+                                    Post post = new Post(popupTitle.getText().toString(),
+                                            popupDescription.getText().toString(),
+                                            imageDownloadLink, currentUser.getUid(),
+                                            currentUser.getPhotoUrl().toString());
+
+                                    //aggiungo il post al database
+
+                                    addPost(post);
+
+                                }
+                            }).addOnFailureListener(new OnFailureListener() {
+                                @Override
+                                public void onFailure(@NonNull @NotNull Exception e) {
+                                    //qualcosa non va con la foto
+                                    showMessage(e.getMessage());
+                                    popupClickProgress.setVisibility(View.INVISIBLE);
+                                    popupAddBtn.setVisibility(View.VISIBLE);
+                                }
+                            });
+                        }
+                    });
+
+
+                } else {
+                    showMessage("Assicurati di inserire tutti i dati e di scegliere un immagine");
+                    popupAddBtn.setVisibility(View.VISIBLE);
+                    popupClickProgress.setVisibility(View.INVISIBLE);
+                }
             }
         });
     }
 
-    @Override
-    public boolean onCreateOptionsMenu(Menu menu) {
-        // Inflate the menu; this adds items to the action bar if it is present.
-        getMenuInflater().inflate(R.menu.home, menu);
-        return true;
+    //metodo veloce per visualizzare messaggi
+    private void showMessage(String msg) {
+        Toast.makeText(getApplicationContext(), msg, Toast.LENGTH_LONG).show();
     }
-
-    @Override
-    public boolean onSupportNavigateUp() {
-        NavController navController = Navigation.findNavController(this, R.id.nav_host_fragment);
-        return NavigationUI.navigateUp(navController, mAppBarConfiguration)
-                || super.onSupportNavigateUp();
-    }
-
-
 
     public void updateNavHeader() {
         NavigationView navigationView = findViewById(R.id.nav_view);
@@ -182,6 +255,68 @@ public class Home extends AppCompatActivity {
         //con Glide carico l'immagine
 
         Glide.with(this).load(currentUser.getPhotoUrl()).apply(RequestOptions.circleCropTransform()).into(navUserPhoto);
+
+    }
+
+    private void setupPopupImageClick() {
+        popupPostImage.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                //quando clicco l'immagine apre la galleria; prima però vedo se ho i permessi
+                checkRequestPermission();
+
+
+            }
+        });
+    }
+
+    private void checkRequestPermission() {
+        if (ContextCompat.checkSelfPermission(Home.this, Manifest.permission.READ_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
+            if (ActivityCompat.shouldShowRequestPermissionRationale(Home.this, Manifest.permission.READ_EXTERNAL_STORAGE)) {
+                Toast.makeText(Home.this, "Consentire il permesso per favore", Toast.LENGTH_SHORT).show();
+            } else {
+                ActivityCompat.requestPermissions(Home.this, new String[]{Manifest.permission.READ_EXTERNAL_STORAGE}, pReqCode);
+            }
+        } else openGallery();
+    }
+
+    private void openGallery() {
+        Intent galleryIntent = new Intent(Intent.ACTION_GET_CONTENT);
+        galleryIntent.setType("image/*");
+        startActivityForResult(galleryIntent, reqCode);
+    }
+
+    //quando l'utente sceglie un'immagine
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+
+        if (resultCode == RESULT_OK && requestCode == reqCode && data != null) {
+            pickedImgUri = data.getData();
+            popupPostImage.setImageURI(pickedImgUri);
+        }
+    }
+
+
+    private void addPost(Post post) {
+        FirebaseDatabase database = FirebaseDatabase.getInstance("https://blogapp-b229c-default-rtdb.europe-west1.firebasedatabase.app/");
+        DatabaseReference ref = database.getReference("Post").push();
+        //ottengo l'id del post e carico la chiave
+        String key = ref.getKey();
+        post.setKey(key);
+
+        //aggiungo i dati al database di firebase
+
+        ref.setValue(post).addOnSuccessListener(new OnSuccessListener<Void>() {
+            @Override
+            public void onSuccess(Void unused) {
+                showMessage("Post aggiunto con successo!");
+                popupClickProgress.setVisibility(View.INVISIBLE);
+                popupAddBtn.setVisibility(View.VISIBLE);
+                popAddPost.dismiss();
+            }
+        });
+
 
     }
 }
