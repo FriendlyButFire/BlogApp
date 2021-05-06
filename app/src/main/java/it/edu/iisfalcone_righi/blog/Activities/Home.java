@@ -202,7 +202,9 @@ public class Home extends AppCompatActivity {
                                     Post post = new Post(popupTitle.getText().toString(),
                                             popupDescription.getText().toString(),
                                             imageDownloadLink, currentUser.getUid(),
-                                            currentUser.getPhotoUrl().toString());
+                                            currentUser.getPhotoUrl().toString()
+                                            //,currentUser.getDisplayName()
+                                            );
 
                                     //aggiungo il post al database
 

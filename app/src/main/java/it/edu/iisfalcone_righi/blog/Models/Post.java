@@ -10,20 +10,32 @@ public class Post {
     private String picture;
     private String userId;
     private String userPhoto;
+    //private String userName;
     private Object timeStamp;
 
-    public Post(String title, String description, String picture, String userId, String userPhoto) {
+    public Post(String title, String description, String picture, String userId, String userPhoto
+            //, String userName) {
+    ){
         this.title = title;
         this.description = description;
         this.picture = picture;
         this.userId = userId;
         this.userPhoto = userPhoto;
+        //this.userName = userName;
         this.timeStamp = ServerValue.TIMESTAMP;
 
     }
 
     public Post() {
     }
+
+    //public String getUserName() {
+      //  return userName;
+    //}
+
+    //public void setUserName(String userName) {
+        //this.userName = userName;
+    //}
 
     public String getKey() {
         return key;
