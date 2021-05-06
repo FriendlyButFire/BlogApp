@@ -11,10 +11,11 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/Theme.Blog">
+        <activity android:name=".Activities.PostDetailActivity"></activity>
         <activity
             android:name=".Activities.Home"
             android:label="@string/title_activity_home"
-            android:theme="@style/Theme.Blog.NoActionBar"></activity>
+            android:theme="@style/Theme.Blog.NoActionBar" />
         <activity android:name=".Activities.LoginActivity">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
@@ -23,7 +24,7 @@
             </intent-filter>
         </activity>
         <activity android:name=".Activities.HomeActivity" />
-        <activity android:name=".Activities.RegisterActivity"></activity>
+        <activity android:name=".Activities.RegisterActivity" />
     </application>
 
 </manifest>
