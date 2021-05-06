@@ -5,11 +5,26 @@ import android.os.Bundle;
 
 import androidx.annotation.NonNull;
 import androidx.fragment.app.Fragment;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
 
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.ValueEventListener;
+
+import org.jetbrains.annotations.NotNull;
+
+import java.util.ArrayList;
+import java.util.List;
+
+import it.edu.iisfalcone_righi.blog.Adapters.PostAdapter;
+import it.edu.iisfalcone_righi.blog.Models.Post;
 import it.edu.iisfalcone_righi.blog.R;
 
 /**
@@ -23,10 +38,15 @@ public class HomeFragment extends Fragment {
     // the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
     private static final String ARG_PARAM1 = "param1";
     private static final String ARG_PARAM2 = "param2";
-
+    RecyclerView postRecyclerView;
+    PostAdapter postAdapter;
+    FirebaseDatabase firebaseDatabase;
+    DatabaseReference databaseReference;
+    List<Post> postList;
     // TODO: Rename and change types of parameters
     private String mParam1;
     private String mParam2;
+
 
     public HomeFragment() {
         // Required empty public constructor
@@ -63,8 +83,42 @@ public class HomeFragment extends Fragment {
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         // Inflate the layout for this fragment
-        return inflater.inflate(R.layout.fragment_home2, container, false);
+        LinearLayoutManager llm = new LinearLayoutManager(getActivity());
+        llm.setStackFromEnd(true);
+        llm.setReverseLayout(true);
+        View fragmentView = inflater.inflate(R.layout.fragment_home, container, false);
+        postRecyclerView = fragmentView.findViewById(R.id.postRV);
+        postRecyclerView.setLayoutManager(llm);
+        postRecyclerView.setHasFixedSize(true);
+        firebaseDatabase = FirebaseDatabase.getInstance("https://blogapp-b229c-default-rtdb.europe-west1.firebasedatabase.app/");
+        databaseReference = firebaseDatabase.getReference("Post");
+        return fragmentView;
     }
+
+    @Override
+    public void onStart() {
+        super.onStart();
+        //ottengo la lista dei post
+        databaseReference.addValueEventListener(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull @NotNull DataSnapshot snapshot) {
+                postList = new ArrayList<>();
+                for (DataSnapshot postsnap : snapshot.getChildren()) {
+                    Post post = postsnap.getValue(Post.class);
+                    postList.add(post);
+                }
+                postAdapter = new PostAdapter(getActivity(), postList);
+                postRecyclerView.setAdapter(postAdapter);
+            }
+
+            @Override
+            public void onCancelled(@NonNull @NotNull DatabaseError error) {
+
+            }
+        });
+
+    }
+
     @Override
     public void onAttach(@NonNull Context context) {
         super.onAttach(context);
