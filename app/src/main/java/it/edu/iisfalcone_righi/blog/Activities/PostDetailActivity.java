@@ -1,24 +1,34 @@
 package it.edu.iisfalcone_righi.blog.Activities;
 
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 
 import android.os.Bundle;
 import android.text.format.DateFormat;
+import android.view.View;
 import android.view.Window;
 import android.view.WindowManager;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.bumptech.glide.Glide;
 import com.bumptech.glide.request.RequestOptions;
+import com.google.android.gms.tasks.OnFailureListener;
+import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
+
+import org.jetbrains.annotations.NotNull;
 
 import java.util.Calendar;
 import java.util.Locale;
 
+import it.edu.iisfalcone_righi.blog.Models.Comment;
 import it.edu.iisfalcone_righi.blog.R;
 
 public class PostDetailActivity extends AppCompatActivity {
@@ -32,6 +42,8 @@ public class PostDetailActivity extends AppCompatActivity {
 
     FirebaseAuth firebaseAuth;
     FirebaseUser firebaseUser;
+
+    FirebaseDatabase firebaseDatabase;
 
 
     @Override
@@ -62,6 +74,37 @@ public class PostDetailActivity extends AppCompatActivity {
 
         firebaseAuth = FirebaseAuth.getInstance();
         firebaseUser = firebaseAuth.getCurrentUser();
+
+        firebaseDatabase = FirebaseDatabase.getInstance("https://blogapp-b229c-default-rtdb.europe-west1.firebasedatabase.app/");
+
+        //Aggiungo il tasto commenta
+
+        btnAddComment.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                btnAddComment.setVisibility(View.INVISIBLE);
+                DatabaseReference commentReference = firebaseDatabase.getReference("Commenti").child(postKey);
+                String comment_context = editTextComment.getText().toString();
+                String userId = firebaseUser.getUid();
+                String userName = firebaseUser.getDisplayName();
+                String userImg = firebaseUser.getPhotoUrl().toString();
+                Comment comment = new Comment(comment_context,userId,userImg,userName);
+
+                commentReference.setValue(comment).addOnSuccessListener(new OnSuccessListener<Void>() {
+                    @Override
+                    public void onSuccess(Void unused) {
+                        showMessage("Commento inserito!");
+                        editTextComment.setText("");
+                        btnAddComment.setVisibility(View.VISIBLE);
+                    }
+                }).addOnFailureListener(new OnFailureListener() {
+                    @Override
+                    public void onFailure(@NonNull @NotNull Exception e) {
+                        showMessage("Commento non inserito: "+e.getMessage());
+                    }
+                });
+            }
+        });
 
         //ottengo i dati del post per collegarli alle view sopra
 
@@ -98,5 +141,10 @@ public class PostDetailActivity extends AppCompatActivity {
         calendar.setTimeInMillis(time);
         String date = DateFormat.format("dd-MM-yyyy",calendar).toString();
         return date;
+    }
+
+    //metodo veloce per visualizzare messaggi
+    private void showMessage(String msg) {
+        Toast.makeText(getApplicationContext(), msg, Toast.LENGTH_LONG).show();
     }
 }
