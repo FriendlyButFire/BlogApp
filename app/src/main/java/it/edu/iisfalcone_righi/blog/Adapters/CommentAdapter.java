@@ -12,6 +12,7 @@ import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.bumptech.glide.Glide;
+import com.bumptech.glide.request.RequestOptions;
 
 import org.jetbrains.annotations.NotNull;
 
@@ -42,7 +43,11 @@ public class CommentAdapter extends RecyclerView.Adapter<CommentAdapter.CommentV
 
     @Override
     public void onBindViewHolder(@NonNull @NotNull CommentViewHolder holder, int position) {
-        Glide.with(mContext).load(mData.get(position).getUserImg()).into(holder.img_user);
+        String userimg = mData.get(position).getUserImg();
+        if (userimg != null)
+            Glide.with(mContext).load(userimg).apply(RequestOptions.circleCropTransform()).into(holder.img_user);
+        else
+            Glide.with(mContext).load(R.drawable.userphoto).apply(RequestOptions.circleCropTransform()).into(holder.img_user);
         holder.tv_name.setText(mData.get(position).getUserName());
         holder.tv_content.setText(mData.get(position).getContent());
         holder.tv_date.setText(timestampToString((Long) mData.get(position).getTimestamp()));

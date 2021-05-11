@@ -199,16 +199,33 @@ public class Home extends AppCompatActivity {
                                     String imageDownloadLink = uri.toString();
                                     //creo l'oggetto post
 
-                                    Post post = new Post(popupTitle.getText().toString(),
-                                            popupDescription.getText().toString(),
-                                            imageDownloadLink, currentUser.getUid(),
-                                            currentUser.getPhotoUrl().toString()
-                                            //,currentUser.getDisplayName()
-                                            );
+                                    if(currentUser.getPhotoUrl()!=null){
+                                        Post post = new Post(popupTitle.getText().toString(),
+                                                popupDescription.getText().toString(),
+                                                imageDownloadLink, currentUser.getUid(),
+                                                currentUser.getPhotoUrl().toString()
+                                                //,currentUser.getDisplayName()
+                                        );
 
-                                    //aggiungo il post al database
+                                        //aggiungo il post al database
 
-                                    addPost(post);
+                                        addPost(post);
+
+                                    }
+                                    else {
+                                        Post post = new Post(popupTitle.getText().toString(),
+                                                popupDescription.getText().toString(),
+                                                imageDownloadLink, currentUser.getUid(),
+                                                null
+                                                //,currentUser.getDisplayName()
+                                        );
+
+                                        //aggiungo il post al database
+
+                                        addPost(post);
+
+                                    }
+
 
                                 }
                             }).addOnFailureListener(new OnFailureListener() {
@@ -251,8 +268,10 @@ public class Home extends AppCompatActivity {
         navUsername.setText(currentUser.getDisplayName());
 
         //con Glide carico l'immagine
-
-        Glide.with(this).load(currentUser.getPhotoUrl()).apply(RequestOptions.circleCropTransform()).into(navUserPhoto);
+        if (currentUser.getPhotoUrl() != null)
+            Glide.with(this).load(currentUser.getPhotoUrl()).apply(RequestOptions.circleCropTransform()).into(navUserPhoto);
+        else
+            Glide.with(this).load(R.drawable.userphoto).apply(RequestOptions.circleCropTransform()).into(navUserPhoto);
 
     }
 

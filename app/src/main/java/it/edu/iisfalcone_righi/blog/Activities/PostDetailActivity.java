@@ -100,7 +100,7 @@ public class PostDetailActivity extends AppCompatActivity {
                 String userId = firebaseUser.getUid();
                 String userName = firebaseUser.getDisplayName();
                 String userImg = firebaseUser.getPhotoUrl().toString();
-                Comment comment = new Comment(comment_content,userId,userImg,userName);
+                Comment comment = new Comment(comment_content, userId, userImg, userName);
 
                 commentReference.setValue(comment).addOnSuccessListener(new OnSuccessListener<Void>() {
                     @Override
@@ -112,7 +112,7 @@ public class PostDetailActivity extends AppCompatActivity {
                 }).addOnFailureListener(new OnFailureListener() {
                     @Override
                     public void onFailure(@NonNull @NotNull Exception e) {
-                        showMessage("Commento non inserito: "+e.getMessage());
+                        showMessage("Commento non inserito: " + e.getMessage());
                     }
                 });
             }
@@ -127,14 +127,19 @@ public class PostDetailActivity extends AppCompatActivity {
         txtPostTitle.setText(title);
 
         String userPhoto = getIntent().getExtras().getString("userPhoto");
-        Glide.with(this).load(userPhoto).apply(RequestOptions.circleCropTransform()).into(imgUserPost);
+        if (userPhoto != null)
+            Glide.with(this).load(userPhoto).apply(RequestOptions.circleCropTransform()).into(imgUserPost);
+        else
+            Glide.with(this).load(R.drawable.userphoto).apply(RequestOptions.circleCropTransform()).into(imgUserPost);
 
         String description = getIntent().getExtras().getString("description");
         txtPostDesc.setText(description);
 
         //imposto l'immagine dell'utente che commenta
-
-        Glide.with(this).load(firebaseUser.getPhotoUrl()).apply(RequestOptions.circleCropTransform()).into(imgCurrentUser);
+        if (firebaseUser.getPhotoUrl() != null)
+            Glide.with(this).load(firebaseUser.getPhotoUrl()).apply(RequestOptions.circleCropTransform()).into(imgCurrentUser);
+        else
+            Glide.with(this).load(R.drawable.userphoto).apply(RequestOptions.circleCropTransform()).into(imgCurrentUser);
 
         //ottengo l'id del post
 
@@ -156,11 +161,11 @@ public class PostDetailActivity extends AppCompatActivity {
             @Override
             public void onDataChange(@NonNull @NotNull DataSnapshot snapshot) {
                 listComment = new ArrayList<>();
-                for(DataSnapshot commentSnap : snapshot.getChildren()){
+                for (DataSnapshot commentSnap : snapshot.getChildren()) {
                     Comment comment = commentSnap.getValue(Comment.class);
                     listComment.add(comment);
                 }
-                commentAdapter=new CommentAdapter(getApplicationContext(), listComment);
+                commentAdapter = new CommentAdapter(getApplicationContext(), listComment);
                 RvComment.setAdapter(commentAdapter);
             }
 
@@ -171,10 +176,10 @@ public class PostDetailActivity extends AppCompatActivity {
         });
     }
 
-    private String timestampToString(long time){
+    private String timestampToString(long time) {
         Calendar calendar = Calendar.getInstance(Locale.ITALIAN);
         calendar.setTimeInMillis(time);
-        String date = DateFormat.format("dd-MM-yyyy",calendar).toString();
+        String date = DateFormat.format("dd-MM-yyyy", calendar).toString();
         return date;
     }
 

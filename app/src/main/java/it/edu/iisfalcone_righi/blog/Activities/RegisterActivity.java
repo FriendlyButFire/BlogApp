@@ -30,14 +30,15 @@ import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
 import com.google.firebase.storage.UploadTask;
 
+import org.jetbrains.annotations.NotNull;
+
 import it.edu.iisfalcone_righi.blog.R;
 
 public class RegisterActivity extends AppCompatActivity {
 
-    ImageView userPhoto;
     static int pReqCode = 1;
     static int reqCode = 1;
-
+    ImageView userPhoto;
     Uri pickedImgUri;
 
     private EditText userEmail, userPassword, userPassword2, userName;
@@ -107,8 +108,11 @@ public class RegisterActivity extends AppCompatActivity {
                 if (task.isSuccessful()) {
                     //account creato
                     showMessage("Account creato!");
+                    //controllo se l'utente ha scelto una foto:
+                    if(pickedImgUri!=null){
                     //dopo la creazione imposto foto profilo e nome
-                    updateUserInfo(name, pickedImgUri, mAuth.getCurrentUser());
+                    updateUserInfo(name, pickedImgUri, mAuth.getCurrentUser());}
+                    else updateUserInfoWithoutPhoto(name,mAuth.getCurrentUser());
                 } else {
                     //account non creato
                     showMessage("Creazione account fallita" + task.getException().getMessage());
@@ -120,7 +124,7 @@ public class RegisterActivity extends AppCompatActivity {
     }
 
     //cambio foto profilo e nome
-    private void updateUserInfo(String name, Uri pickedImgUri, FirebaseUser currentUser) {
+    private void updateUserInfo(String name, @NotNull Uri pickedImgUri, FirebaseUser currentUser) {
         //carico la foto sullo storage di Firebase e chiedo l'url
         StorageReference mStorage = FirebaseStorage.getInstance().getReference().child("foto utenti");
         StorageReference imageFilePath = mStorage.child(pickedImgUri.getLastPathSegment());
@@ -137,7 +141,7 @@ public class RegisterActivity extends AppCompatActivity {
                         currentUser.updateProfile(profileUpdate).addOnCompleteListener(new OnCompleteListener<Void>() {
                             @Override
                             public void onComplete(@NonNull Task<Void> task) {
-                                if(task.isSuccessful()){
+                                if (task.isSuccessful()) {
                                     //informazioni utente modificate
                                     showMessage("Registrato con successo!");
                                     updateUI();
@@ -151,8 +155,25 @@ public class RegisterActivity extends AppCompatActivity {
         });
     }
 
+    private void updateUserInfoWithoutPhoto(String name, FirebaseUser currentUser) {
+
+        UserProfileChangeRequest profileUpdate = new UserProfileChangeRequest.Builder().setDisplayName(name).build();
+
+        currentUser.updateProfile(profileUpdate).addOnCompleteListener(new OnCompleteListener<Void>() {
+            @Override
+            public void onComplete(@NonNull Task<Void> task) {
+                if (task.isSuccessful()) {
+                    //informazioni utente modificate
+                    showMessage("Registrato con successo!");
+                    updateUI();
+                }
+            }
+        });
+
+    }
+
     private void updateUI() {
-        Intent homeActivity = new Intent(getApplicationContext(),Home.class);
+        Intent homeActivity = new Intent(getApplicationContext(), Home.class);
         startActivity(homeActivity);
         finish();
     }
