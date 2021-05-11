@@ -10,6 +10,7 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.view.Gravity;
 import android.view.Menu;
+import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.ImageView;
@@ -71,7 +72,7 @@ public class Home extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_home2);
         Toolbar toolbar = findViewById(R.id.toolbar);
-        setSupportActionBar(toolbar);
+            setSupportActionBar(toolbar);
 
         //init firebase
 
@@ -110,14 +111,17 @@ public class Home extends AppCompatActivity {
                 switch (id) {
                     case R.id.nav_home:
                         getSupportActionBar().setTitle(R.string.nav_home);
+                        fab.setVisibility(View.VISIBLE);
                         getSupportFragmentManager().beginTransaction().replace(R.id.nav_host_fragment, new HomeFragment()).commit();
                         break;
                     case R.id.nav_profile:
                         getSupportActionBar().setTitle(R.string.nav_profile);
+                        fab.setVisibility(View.INVISIBLE);
                         getSupportFragmentManager().beginTransaction().replace(R.id.nav_host_fragment, new ProfileFragment()).commit();
                         break;
                     case R.id.nav_settings:
                         getSupportActionBar().setTitle(R.string.nav_settings);
+                        fab.setVisibility(View.INVISIBLE);
                         getSupportFragmentManager().beginTransaction().replace(R.id.nav_host_fragment, new SettingsFragment()).commit();
                         break;
                     case R.id.nav_signout:
@@ -144,6 +148,10 @@ public class Home extends AppCompatActivity {
     public boolean onCreateOptionsMenu(Menu menu) {
         // Inflate the menu; this adds items to the action bar if it is present.
         getMenuInflater().inflate(R.menu.home, menu);
+        MenuItem item = menu.findItem(R.id.action_settings);
+        if (item != null) {
+            item.setVisible(false);
+        }
         return true;
     }
 
@@ -199,7 +207,7 @@ public class Home extends AppCompatActivity {
                                     String imageDownloadLink = uri.toString();
                                     //creo l'oggetto post
 
-                                    if(currentUser.getPhotoUrl()!=null){
+                                    if (currentUser.getPhotoUrl() != null) {
                                         Post post = new Post(popupTitle.getText().toString(),
                                                 popupDescription.getText().toString(),
                                                 imageDownloadLink, currentUser.getUid(),
@@ -211,8 +219,7 @@ public class Home extends AppCompatActivity {
 
                                         addPost(post);
 
-                                    }
-                                    else {
+                                    } else {
                                         Post post = new Post(popupTitle.getText().toString(),
                                                 popupDescription.getText().toString(),
                                                 imageDownloadLink, currentUser.getUid(),

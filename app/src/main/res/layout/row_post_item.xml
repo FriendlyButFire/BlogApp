@@ -27,6 +27,7 @@
         app:srcCompat="@drawable/black_gradient" />
 
     <TextView
+        android:textSize="20sp"
         android:id="@+id/row_post_title"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
