@@ -2,6 +2,8 @@ package it.edu.iisfalcone_righi.blog.Activities;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
 
 import android.os.Bundle;
 import android.text.format.DateFormat;
@@ -20,14 +22,20 @@ import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.ValueEventListener;
 
 import org.jetbrains.annotations.NotNull;
 
+import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.List;
 import java.util.Locale;
 
+import it.edu.iisfalcone_righi.blog.Adapters.CommentAdapter;
 import it.edu.iisfalcone_righi.blog.Models.Comment;
 import it.edu.iisfalcone_righi.blog.R;
 
@@ -45,6 +53,10 @@ public class PostDetailActivity extends AppCompatActivity {
 
     FirebaseDatabase firebaseDatabase;
 
+    RecyclerView RvComment;
+    CommentAdapter commentAdapter;
+    List<Comment> listComment;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -59,7 +71,7 @@ public class PostDetailActivity extends AppCompatActivity {
         getSupportActionBar().hide();
 
         //init View
-
+        RvComment = findViewById(R.id.rv_comment);
         imgPost = findViewById(R.id.post_detail_img);
         imgUserPost = findViewById(R.id.post_detail_user_img);
         imgCurrentUser = findViewById(R.id.post_detail_currentuser_img);
@@ -83,12 +95,12 @@ public class PostDetailActivity extends AppCompatActivity {
             @Override
             public void onClick(View v) {
                 btnAddComment.setVisibility(View.INVISIBLE);
-                DatabaseReference commentReference = firebaseDatabase.getReference("Commenti").child(postKey);
-                String comment_context = editTextComment.getText().toString();
+                DatabaseReference commentReference = firebaseDatabase.getReference("Commenti").child(postKey).push();
+                String comment_content = editTextComment.getText().toString();
                 String userId = firebaseUser.getUid();
                 String userName = firebaseUser.getDisplayName();
                 String userImg = firebaseUser.getPhotoUrl().toString();
-                Comment comment = new Comment(comment_context,userId,userImg,userName);
+                Comment comment = new Comment(comment_content,userId,userImg,userName);
 
                 commentReference.setValue(comment).addOnSuccessListener(new OnSuccessListener<Void>() {
                     @Override
@@ -132,8 +144,31 @@ public class PostDetailActivity extends AppCompatActivity {
 
         txtPostDateName.setText(date);
 
+        //init recycleView Commenti
+        initRvComment();
 
+    }
 
+    private void initRvComment() {
+        RvComment.setLayoutManager(new LinearLayoutManager(this));
+        DatabaseReference commentRef = firebaseDatabase.getReference("Commenti").child(postKey);
+        commentRef.addValueEventListener(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull @NotNull DataSnapshot snapshot) {
+                listComment = new ArrayList<>();
+                for(DataSnapshot commentSnap : snapshot.getChildren()){
+                    Comment comment = commentSnap.getValue(Comment.class);
+                    listComment.add(comment);
+                }
+                commentAdapter=new CommentAdapter(getApplicationContext(), listComment);
+                RvComment.setAdapter(commentAdapter);
+            }
+
+            @Override
+            public void onCancelled(@NonNull @NotNull DatabaseError error) {
+
+            }
+        });
     }
 
     private String timestampToString(long time){
