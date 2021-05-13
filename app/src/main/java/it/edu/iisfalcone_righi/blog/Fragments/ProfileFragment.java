@@ -22,6 +22,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.ImageView;
+import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -61,7 +62,7 @@ public class ProfileFragment extends Fragment {
     private FirebaseAuth mAuth;
     private TextView userAuthEmail;
     private ImageView userImage;
-    //private FirebaseFirestore db;
+    private ProgressBar changeUserImgProgress;
     private TextView userName;
     private Button changeUserImgBtn;
     private ImageView selected_Pic;
@@ -115,6 +116,10 @@ public class ProfileFragment extends Fragment {
         userImage = view.findViewById(R.id.account_user_image_view);
         changeUserImgBtn = view.findViewById(R.id.change_pic_btn);
 
+        changeUserImgProgress = view.findViewById(R.id.change_pic_bar);
+
+        changeUserImgProgress.setVisibility(View.INVISIBLE);
+
 
         mAuth = FirebaseAuth.getInstance();
         FirebaseUser user = mAuth.getCurrentUser();
@@ -140,7 +145,8 @@ public class ProfileFragment extends Fragment {
         changeUserImgBtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-
+                changeUserImgBtn.setVisibility(View.INVISIBLE);
+                changeUserImgProgress.setVisibility(View.VISIBLE);
                 updateUserInfo(userName.getText().toString(), pickedImgUri, mAuth.getCurrentUser());
 
             }
@@ -170,7 +176,13 @@ public class ProfileFragment extends Fragment {
                                 if (task.isSuccessful()) {
                                     //informazioni utente modificate
                                     showMessage("Immagine aggiornata!");
+                                    changeUserImgBtn.setVisibility(View.VISIBLE);
+                                    changeUserImgProgress.setVisibility(View.INVISIBLE);
 
+                                }else {
+                                    showMessage("Cambio immagine fallita" + task.getException().getMessage());
+                                    changeUserImgBtn.setVisibility(View.VISIBLE);
+                                    changeUserImgProgress.setVisibility(View.INVISIBLE);
                                 }
                             }
                         });
