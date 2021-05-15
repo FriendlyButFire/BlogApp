@@ -1,12 +1,15 @@
 package it.edu.iisfalcone_righi.blog.Adapters;
 
+import android.app.AlertDialog;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
@@ -69,23 +72,33 @@ public class PostAdapter extends RecyclerView.Adapter<PostAdapter.MyViewHolder> 
             imgPost = itemView.findViewById(R.id.row_post_img);
             imgPostProfile = itemView.findViewById(R.id.row_post_profile_img);
 
+            imgPost.setOnLongClickListener(v -> {
+                int position = getAdapterPosition();
+                AlertDialog.Builder builder = new AlertDialog.Builder(mContext);
+                builder.setTitle("Post numero " + position)
+                        .setMessage("Sei sicuro di voler eliminare questo post?")
+                        .setPositiveButton("Si", (dialog, which) -> {
+                            mData.remove(position);
+                            notifyDataSetChanged();
+                            Toast.makeText(mContext, "Funziona ma non funziona", Toast.LENGTH_LONG).show();
+                        }).setNegativeButton("No", (dialog, which) -> dialog.dismiss()).show();
+                return false;
+            });
+
             //invio i dati all'activity che gestisce i post
 
-            itemView.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    Intent postDetailActivity = new Intent(mContext, PostDetailActivity.class);
-                    int position = getAdapterPosition();
-                    postDetailActivity.putExtra("title", mData.get(position).getTitle());
-                    postDetailActivity.putExtra("postImage", mData.get(position).getPicture());
-                    postDetailActivity.putExtra("description", mData.get(position).getDescription());
-                    postDetailActivity.putExtra("postKey", mData.get(position).getKey());
-                    postDetailActivity.putExtra("userPhoto", mData.get(position).getUserPhoto());
-                    //postDetailActivity.putExtra("userName",mData.get(position).getUserName());
-                    long timestamp = (long) mData.get(position).getTimeStamp();
-                    postDetailActivity.putExtra("postDate", timestamp);
-                    mContext.startActivity(postDetailActivity);
-                }
+            itemView.setOnClickListener(v -> {
+                int position = getAdapterPosition();
+                Intent postDetailActivity = new Intent(mContext, PostDetailActivity.class);
+                postDetailActivity.putExtra("title", mData.get(position).getTitle());
+                postDetailActivity.putExtra("postImage", mData.get(position).getPicture());
+                postDetailActivity.putExtra("description", mData.get(position).getDescription());
+                postDetailActivity.putExtra("postKey", mData.get(position).getKey());
+                postDetailActivity.putExtra("userPhoto", mData.get(position).getUserPhoto());
+                //postDetailActivity.putExtra("userName",mData.get(position).getUserName());
+                long timestamp = (long) mData.get(position).getTimeStamp();
+                postDetailActivity.putExtra("postDate", timestamp);
+                mContext.startActivity(postDetailActivity);
             });
         }
 
