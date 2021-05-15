@@ -271,14 +271,26 @@ public class Home extends AppCompatActivity {
 
         //ottengo i dati dall'utente e li visualizzo
 
-        navUserMail.setText(currentUser.getEmail());
-        navUsername.setText(currentUser.getDisplayName());
+        FirebaseAuth auth = FirebaseAuth.getInstance();
 
-        //con Glide carico l'immagine
-        if (currentUser.getPhotoUrl() != null)
-            Glide.with(this).load(currentUser.getPhotoUrl()).apply(RequestOptions.circleCropTransform()).into(navUserPhoto);
-        else
-            Glide.with(this).load(R.drawable.userphoto).apply(RequestOptions.circleCropTransform()).into(navUserPhoto);
+        auth.getCurrentUser().reload().addOnSuccessListener(new OnSuccessListener<Void>() {
+            @Override
+            public void onSuccess(Void unused) {
+                FirebaseUser user = auth.getCurrentUser();
+
+                navUserMail.setText(user.getEmail());
+                navUsername.setText(user.getDisplayName());
+
+                //con Glide carico l'immagine
+                if (user.getPhotoUrl() != null)
+                    Glide.with(getApplicationContext()).load(user.getPhotoUrl()).apply(RequestOptions.circleCropTransform()).into(navUserPhoto);
+                else
+                    Glide.with(getApplicationContext()).load(R.drawable.userphoto).apply(RequestOptions.circleCropTransform()).into(navUserPhoto);
+
+
+            }
+        });
+
 
     }
 
