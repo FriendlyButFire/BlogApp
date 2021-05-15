@@ -72,7 +72,7 @@ public class PostAdapter extends RecyclerView.Adapter<PostAdapter.MyViewHolder> 
             imgPost = itemView.findViewById(R.id.row_post_img);
             imgPostProfile = itemView.findViewById(R.id.row_post_profile_img);
 
-            imgPost.setOnLongClickListener(v -> {
+            itemView.setOnLongClickListener(v -> {
                 int position = getAdapterPosition();
                 AlertDialog.Builder builder = new AlertDialog.Builder(mContext);
                 builder.setTitle("Post numero " + position)
@@ -80,6 +80,7 @@ public class PostAdapter extends RecyclerView.Adapter<PostAdapter.MyViewHolder> 
                         .setPositiveButton("Si", (dialog, which) -> {
                             mData.remove(position);
                             notifyDataSetChanged();
+
                             Toast.makeText(mContext, "Funziona ma non funziona", Toast.LENGTH_LONG).show();
                         }).setNegativeButton("No", (dialog, which) -> dialog.dismiss()).show();
                 return false;
