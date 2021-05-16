@@ -3,20 +3,10 @@ package it.edu.iisfalcone_righi.blog.Fragments;
 import android.Manifest;
 import android.app.Activity;
 import android.content.Context;
-
-import org.jetbrains.annotations.NotNull;
-
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.net.Uri;
 import android.os.Bundle;
-
-import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
-import androidx.core.app.ActivityCompat;
-import androidx.core.content.ContextCompat;
-import androidx.fragment.app.Fragment;
-
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -27,11 +17,19 @@ import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+import androidx.core.app.ActivityCompat;
+import androidx.core.content.ContextCompat;
+import androidx.fragment.app.Fragment;
+import androidx.fragment.app.FragmentManager;
+
 import com.bumptech.glide.Glide;
 import com.bumptech.glide.request.RequestOptions;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
+import com.google.android.material.navigation.NavigationView;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.auth.UserProfileChangeRequest;
@@ -41,12 +39,12 @@ import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.Query;
 import com.google.firebase.database.ValueEventListener;
-import com.google.firebase.database.core.Tag;
 import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
 import com.google.firebase.storage.UploadTask;
 
-import it.edu.iisfalcone_righi.blog.Activities.Home;
+import org.jetbrains.annotations.NotNull;
+
 import it.edu.iisfalcone_righi.blog.R;
 
 
@@ -156,6 +154,12 @@ public class ProfileFragment extends Fragment {
                 changeUserImgProgress.setVisibility(View.VISIBLE);
                 updateUserInfo(userName.getText().toString(), pickedImgUri, mAuth.getCurrentUser());
 
+
+                if (user.getPhotoUrl() != null)
+                    Glide.with(FragmentManager.findFragment(v)).load(pickedImgUri).apply(RequestOptions.circleCropTransform()).into(userImage);
+                else
+                    Glide.with(FragmentManager.findFragment(v)).load(R.drawable.userphoto).apply(RequestOptions.circleCropTransform()).into(userImage);
+
             }
         });
 
@@ -186,7 +190,7 @@ public class ProfileFragment extends Fragment {
                                     changeUserImgBtn.setVisibility(View.VISIBLE);
                                     changeUserImgProgress.setVisibility(View.INVISIBLE);
 
-                                }else {
+                                } else {
                                     showMessage("Cambio immagine fallita" + task.getException().getMessage());
                                     changeUserImgBtn.setVisibility(View.VISIBLE);
                                     changeUserImgProgress.setVisibility(View.INVISIBLE);
@@ -194,14 +198,20 @@ public class ProfileFragment extends Fragment {
                             }
                         });
 
+                        //cambio l'immagine a tutti i post dell'utente che ha richiesto la modifica
                         String uid = FirebaseAuth.getInstance().getCurrentUser().getUid();
                         DatabaseReference rootRef = FirebaseDatabase.getInstance("https://blogapp-b229c-default-rtdb.europe-west1.firebasedatabase.app/").getReference();
                         DatabaseReference postsRef = rootRef.child("Post");
-                        Query query = postsRef.orderByChild("userId").equalTo(uid);
-                        ValueEventListener valueEventListener = new ValueEventListener() {
+                        Query query = postsRef
+                                .orderByChild("userId").equalTo(uid);
+
+                        DatabaseReference commentRef = rootRef.child("Commenti");
+                        Query query2 = commentRef;
+
+                        query.addListenerForSingleValueEvent(new ValueEventListener() {
                             @Override
-                            public void onDataChange(DataSnapshot dataSnapshot) {
-                                for(DataSnapshot ds : dataSnapshot.getChildren()) {
+                            public void onDataChange(DataSnapshot snapshot) {
+                                for (DataSnapshot ds : snapshot.getChildren()) {
                                     ds.child("userPhoto")
                                             .getRef()
                                             .setValue(uri.toString());
@@ -209,14 +219,65 @@ public class ProfileFragment extends Fragment {
                             }
 
                             @Override
-                            public void onCancelled(@NonNull DatabaseError databaseError) {
-                                Log.d("", databaseError.getMessage()); //Don't ignore errors!
+                            public void onCancelled(@NonNull DatabaseError error) {
+                                Log.d("", error.getMessage()); //Don't ignore errors!
                             }
-                        };
-                        query.addListenerForSingleValueEvent(valueEventListener);
+                        });
+
+
+                        query2.addListenerForSingleValueEvent(new ValueEventListener() {
+                            @Override
+                            public void onDataChange(@NonNull @NotNull DataSnapshot snapshot) {
+                                for (DataSnapshot ds : snapshot.getChildren()) {
+                                    for (DataSnapshot dataSnapshot : ds.getChildren()) {
+
+                                        dataSnapshot.child("userImg")
+                                                .getRef()
+                                                .setValue(uri.toString());
+                                    }
+                                }
+                            }
+
+                            @Override
+                            public void onCancelled(@NonNull @NotNull DatabaseError error) {
+                                Log.d("", error.getMessage()); //Don't ignore errors!
+                            }
+                        });
+
+                        updateNavHeader();
 
                     }
                 });
+            }
+        });
+    }
+
+    public void updateNavHeader() {
+        NavigationView navigationView = getActivity().findViewById(R.id.nav_view);
+        View headerView = navigationView.getHeaderView(0);
+        TextView navUsername = headerView.findViewById(R.id.nav_username);
+        TextView navUserMail = headerView.findViewById(R.id.nav_user_mail);
+        ImageView navUserPhoto = headerView.findViewById(R.id.nav_user_photo);
+
+        //ottengo i dati dall'utente e li visualizzo
+
+        FirebaseAuth auth = FirebaseAuth.getInstance();
+
+        auth.getCurrentUser().reload().addOnSuccessListener(new OnSuccessListener<Void>() {
+            @Override
+            public void onSuccess(Void unused) {
+                FirebaseUser user = auth.getCurrentUser();
+
+                navUserMail.setText(user.getEmail());
+                navUsername.setText(user.getDisplayName());
+
+                //con Glide carico l'immagine
+                if (user.getPhotoUrl() != null)
+                    Glide.with(getActivity().getApplicationContext()).load(user.getPhotoUrl()).apply(RequestOptions.circleCropTransform()).into(navUserPhoto);
+                else
+                    Glide.with(getActivity().getApplicationContext()).load(R.drawable.userphoto).apply(RequestOptions.circleCropTransform()).into(navUserPhoto);
+
+
             }
         });
     }
