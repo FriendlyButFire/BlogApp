@@ -230,10 +230,11 @@ public class ProfileFragment extends Fragment {
                             public void onDataChange(@NonNull @NotNull DataSnapshot snapshot) {
                                 for (DataSnapshot ds : snapshot.getChildren()) {
                                     for (DataSnapshot dataSnapshot : ds.getChildren()) {
-
-                                        dataSnapshot.child("userImg")
-                                                .getRef()
-                                                .setValue(uri.toString());
+                                        if (dataSnapshot.child("userId").getValue().equals(uid)) {
+                                            dataSnapshot.child("userImg")
+                                                    .getRef()
+                                                    .setValue(uri.toString());
+                                        }
                                     }
                                 }
                             }
