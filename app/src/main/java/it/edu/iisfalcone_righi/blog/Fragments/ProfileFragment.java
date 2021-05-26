@@ -150,16 +150,25 @@ public class ProfileFragment extends Fragment {
         changeUserImgBtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+
                 changeUserImgBtn.setVisibility(View.INVISIBLE);
                 changeUserImgProgress.setVisibility(View.VISIBLE);
-                updateUserInfo(userName.getText().toString(), pickedImgUri, mAuth.getCurrentUser());
+
+                if(pickedImgUri==null){
+                    showMessage("Seleziona prima un'immagine");
+                    changeUserImgBtn.setVisibility(View.VISIBLE);
+                    changeUserImgProgress.setVisibility(View.INVISIBLE);
+
+                }else {
+
+                    updateUserInfo(userName.getText().toString(), pickedImgUri, mAuth.getCurrentUser());
 
 
-                if (user.getPhotoUrl() != null)
-                    Glide.with(FragmentManager.findFragment(v)).load(pickedImgUri).apply(RequestOptions.circleCropTransform()).into(userImage);
-                else
-                    Glide.with(FragmentManager.findFragment(v)).load(R.drawable.userphoto).apply(RequestOptions.circleCropTransform()).into(userImage);
-
+                    if (user.getPhotoUrl() != null)
+                        Glide.with(FragmentManager.findFragment(v)).load(pickedImgUri).apply(RequestOptions.circleCropTransform()).into(userImage);
+                    else
+                        Glide.with(FragmentManager.findFragment(v)).load(R.drawable.userphoto).apply(RequestOptions.circleCropTransform()).into(userImage);
+                }
             }
         });
 
@@ -191,7 +200,7 @@ public class ProfileFragment extends Fragment {
                                     changeUserImgProgress.setVisibility(View.INVISIBLE);
 
                                 } else {
-                                    showMessage("Cambio immagine fallita" + task.getException().getMessage());
+                                    showMessage("Cambio immagine fallita" + task.getException().getLocalizedMessage());
                                     changeUserImgBtn.setVisibility(View.VISIBLE);
                                     changeUserImgProgress.setVisibility(View.INVISIBLE);
                                 }
@@ -220,7 +229,7 @@ public class ProfileFragment extends Fragment {
 
                             @Override
                             public void onCancelled(@NonNull DatabaseError error) {
-                                Log.d("", error.getMessage()); //Don't ignore errors!
+                                Log.d("ERRORE", error.getMessage()); //Don't ignore errors!
                             }
                         });
 

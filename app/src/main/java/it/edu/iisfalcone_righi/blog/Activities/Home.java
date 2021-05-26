@@ -55,8 +55,8 @@ import it.edu.iisfalcone_righi.blog.R;
 
 public class Home extends AppCompatActivity {
 
-    private static final int pReqCode = 2;
-    private static final int reqCode = 2;
+    private static int pReqCode = 2;
+    private static int reqCode = 2;
     FirebaseAuth mAuth;
     FirebaseUser currentUser;
     Dialog popAddPost;
@@ -86,12 +86,7 @@ public class Home extends AppCompatActivity {
         setupPopupImageClick();
 
         FloatingActionButton fab = findViewById(R.id.fab);
-        fab.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                popAddPost.show();
-            }
-        });
+        fab.setOnClickListener(view -> popAddPost.show());
         DrawerLayout drawer = findViewById(R.id.drawer_layout);
         NavigationView navigationView = findViewById(R.id.nav_view);
         // Passing each menu ID as a set of Ids because each
@@ -118,11 +113,6 @@ public class Home extends AppCompatActivity {
                         getSupportActionBar().setTitle(R.string.nav_profile);
                         fab.setVisibility(View.INVISIBLE);
                         getSupportFragmentManager().beginTransaction().replace(R.id.nav_host_fragment, new ProfileFragment()).commit();
-                        break;
-                    case R.id.nav_settings:
-                        getSupportActionBar().setTitle(R.string.nav_settings);
-                        fab.setVisibility(View.INVISIBLE);
-                        getSupportFragmentManager().beginTransaction().replace(R.id.nav_host_fragment, new SettingsFragment()).commit();
                         break;
                     case R.id.nav_signout:
                         FirebaseAuth.getInstance().signOut();
@@ -239,7 +229,7 @@ public class Home extends AppCompatActivity {
                                 @Override
                                 public void onFailure(@NonNull @NotNull Exception e) {
                                     //qualcosa non va con la foto
-                                    showMessage(e.getMessage());
+                                    showMessage(e.getLocalizedMessage());
                                     popupClickProgress.setVisibility(View.INVISIBLE);
                                     popupAddBtn.setVisibility(View.VISIBLE);
                                 }
@@ -300,8 +290,6 @@ public class Home extends AppCompatActivity {
             public void onClick(View v) {
                 //quando clicco l'immagine apre la galleria; prima però vedo se ho i permessi
                 checkRequestPermission();
-
-
             }
         });
     }
@@ -312,6 +300,7 @@ public class Home extends AppCompatActivity {
                 Toast.makeText(Home.this, "Consentire il permesso per favore", Toast.LENGTH_SHORT).show();
             } else {
                 ActivityCompat.requestPermissions(Home.this, new String[]{Manifest.permission.READ_EXTERNAL_STORAGE}, pReqCode);
+                pReqCode+=1;
             }
         } else openGallery();
     }
@@ -330,6 +319,8 @@ public class Home extends AppCompatActivity {
         if (resultCode == RESULT_OK && requestCode == reqCode && data != null) {
             pickedImgUri = data.getData();
             popupPostImage.setImageURI(pickedImgUri);
+            reqCode+=1;
+
         }
     }
 
@@ -349,7 +340,11 @@ public class Home extends AppCompatActivity {
                 showMessage("Post aggiunto con successo!");
                 popupClickProgress.setVisibility(View.INVISIBLE);
                 popupAddBtn.setVisibility(View.VISIBLE);
+
+                popAddPost.setContentView(R.layout.popup_add_post);
                 popAddPost.dismiss();
+
+                pickedImgUri = null;
             }
         });
 

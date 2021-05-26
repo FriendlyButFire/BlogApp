@@ -3,7 +3,7 @@ package it.edu.iisfalcone_righi.blog.Models;
 import com.google.firebase.database.ServerValue;
 
 public class Comment {
-    private String content, userId, userImg, userName;
+    private String content, userId, userImg, userName,key,postkey;
     private Object timestamp;
 
     public Comment(String content, String userId, String userImg, String userName) {
@@ -24,6 +24,22 @@ public class Comment {
     }
 
     public Comment() {
+    }
+
+    public String getPostkey() {
+        return postkey;
+    }
+
+    public void setPostkey(String postkey) {
+        this.postkey = postkey;
+    }
+
+    public String getKey() {
+        return key;
+    }
+
+    public void setKey(String key) {
+        this.key = key;
     }
 
     public String getContent() {

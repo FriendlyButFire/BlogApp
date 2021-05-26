@@ -115,7 +115,7 @@ public class RegisterActivity extends AppCompatActivity {
                     else updateUserInfoWithoutPhoto(name,mAuth.getCurrentUser());
                 } else {
                     //account non creato
-                    showMessage("Creazione account fallita" + task.getException().getMessage());
+                    showMessage("Creazione account fallita" + task.getException().getLocalizedMessage());
                     regBtn.setVisibility(View.VISIBLE);
                     loadingProgress.setVisibility(View.INVISIBLE);
                 }

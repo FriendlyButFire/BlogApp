@@ -2,7 +2,6 @@ package it.edu.iisfalcone_righi.blog.Adapters;
 
 import android.app.AlertDialog;
 import android.content.Context;
-import android.content.DialogInterface;
 import android.content.Intent;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -16,6 +15,10 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.bumptech.glide.Glide;
 import com.bumptech.glide.request.RequestOptions;
+import com.google.android.gms.tasks.OnFailureListener;
+import com.google.android.gms.tasks.OnSuccessListener;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
 
 import org.jetbrains.annotations.NotNull;
 
@@ -25,10 +28,12 @@ import it.edu.iisfalcone_righi.blog.Activities.PostDetailActivity;
 import it.edu.iisfalcone_righi.blog.Models.Post;
 import it.edu.iisfalcone_righi.blog.R;
 
-public class PostAdapter extends RecyclerView.Adapter<PostAdapter.MyViewHolder> {
+public class PostAdapter extends RecyclerView.Adapter<PostAdapter.PostViewHolder> {
 
     Context mContext;
     List<Post> mData;
+    FirebaseDatabase firebaseDatabase;
+    DatabaseReference databaseReference;
 
     public PostAdapter(Context mContext, List<Post> mData) {
         this.mContext = mContext;
@@ -38,14 +43,14 @@ public class PostAdapter extends RecyclerView.Adapter<PostAdapter.MyViewHolder> 
     @NonNull
     @NotNull
     @Override
-    public PostAdapter.MyViewHolder onCreateViewHolder(@NonNull @NotNull ViewGroup parent, int viewType) {
+    public PostViewHolder onCreateViewHolder(@NonNull @NotNull ViewGroup parent, int viewType) {
 
         View row = LayoutInflater.from(mContext).inflate(R.layout.row_post_item, parent, false);
-        return new MyViewHolder(row);
+        return new PostViewHolder(row);
     }
 
     @Override
-    public void onBindViewHolder(@NonNull @NotNull PostAdapter.MyViewHolder holder, int position) {
+    public void onBindViewHolder(@NonNull @NotNull PostViewHolder holder, int position) {
         holder.tvTitle.setText(mData.get(position).getTitle());
         Glide.with(mContext).load(mData.get(position).getPicture()).into(holder.imgPost);
         String userimg = mData.get(position).getUserPhoto();
@@ -60,17 +65,21 @@ public class PostAdapter extends RecyclerView.Adapter<PostAdapter.MyViewHolder> 
         return mData.size();
     }
 
-    public class MyViewHolder extends RecyclerView.ViewHolder {
+    public class PostViewHolder extends RecyclerView.ViewHolder {
         TextView tvTitle;
         ImageView imgPost;
         ImageView imgPostProfile;
 
-        public MyViewHolder(View itemView) {
+        public PostViewHolder(View itemView) {
             super(itemView);
 
             tvTitle = itemView.findViewById(R.id.row_post_title);
             imgPost = itemView.findViewById(R.id.row_post_img);
             imgPostProfile = itemView.findViewById(R.id.row_post_profile_img);
+
+
+            firebaseDatabase = FirebaseDatabase.getInstance("https://blogapp-b229c-default-rtdb.europe-west1.firebasedatabase.app/");
+            databaseReference = firebaseDatabase.getReference("Post");
 
             itemView.setOnLongClickListener(v -> {
                 int position = getAdapterPosition();
@@ -78,10 +87,26 @@ public class PostAdapter extends RecyclerView.Adapter<PostAdapter.MyViewHolder> 
                 builder.setTitle("Post numero " + position)
                         .setMessage("Sei sicuro di voler eliminare questo post?")
                         .setPositiveButton("Si", (dialog, which) -> {
+
+                            databaseReference.child(mData.
+                                    get(position).
+                                    getKey())
+                                    .removeValue()
+                                    .addOnSuccessListener(new OnSuccessListener<Void>() {
+                                @Override
+                                public void onSuccess(Void unused) {
+                                    Toast.makeText(mContext, "Post eliminato con successo!", Toast.LENGTH_LONG).show();
+                                }
+                            }).addOnFailureListener(new OnFailureListener() {
+                                @Override
+                                public void onFailure(@NonNull @NotNull Exception e) {
+                                    Toast.makeText(mContext, e.getLocalizedMessage(), Toast.LENGTH_LONG).show();
+                                }
+                            });
+
                             mData.remove(position);
                             notifyDataSetChanged();
 
-                            Toast.makeText(mContext, "Funziona ma non funziona", Toast.LENGTH_LONG).show();
                         }).setNegativeButton("No", (dialog, which) -> dialog.dismiss()).show();
                 return false;
             });

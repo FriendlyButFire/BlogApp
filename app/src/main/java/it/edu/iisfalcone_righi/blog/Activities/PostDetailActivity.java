@@ -101,6 +101,9 @@ public class PostDetailActivity extends AppCompatActivity {
                 String userName = firebaseUser.getDisplayName();
                 String userImg = firebaseUser.getPhotoUrl().toString();
                 Comment comment = new Comment(comment_content, userId, userImg, userName);
+                String key = commentReference.getKey();
+                comment.setKey(key);
+                comment.setPostkey(postKey);
 
                 commentReference.setValue(comment).addOnSuccessListener(new OnSuccessListener<Void>() {
                     @Override
@@ -112,7 +115,7 @@ public class PostDetailActivity extends AppCompatActivity {
                 }).addOnFailureListener(new OnFailureListener() {
                     @Override
                     public void onFailure(@NonNull @NotNull Exception e) {
-                        showMessage("Commento non inserito: " + e.getMessage());
+                        showMessage("Commento non inserito: " + e.getLocalizedMessage());
                     }
                 });
             }
@@ -165,7 +168,7 @@ public class PostDetailActivity extends AppCompatActivity {
                     Comment comment = commentSnap.getValue(Comment.class);
                     listComment.add(comment);
                 }
-                commentAdapter = new CommentAdapter(getApplicationContext(), listComment);
+                commentAdapter = new CommentAdapter(PostDetailActivity.this, listComment);
                 RvComment.setAdapter(commentAdapter);
             }
 

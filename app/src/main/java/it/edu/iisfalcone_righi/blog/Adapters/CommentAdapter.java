@@ -1,7 +1,9 @@
 package it.edu.iisfalcone_righi.blog.Adapters;
 
+import android.app.AlertDialog;
 import android.content.Context;
 import android.text.format.DateFormat;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -9,10 +11,16 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.bumptech.glide.Glide;
 import com.bumptech.glide.request.RequestOptions;
+import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.Task;
+import com.google.firebase.database.DatabaseError;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
 
 import org.jetbrains.annotations.NotNull;
 
@@ -25,8 +33,10 @@ import it.edu.iisfalcone_righi.blog.R;
 
 public class CommentAdapter extends RecyclerView.Adapter<CommentAdapter.CommentViewHolder> {
 
-    private Context mContext;
-    private List<Comment> mData;
+    private final Context mContext;
+    private final List<Comment> mData;
+    FirebaseDatabase firebaseDatabase;
+    DatabaseReference databaseReference;
 
     public CommentAdapter(Context mContext, List<Comment> mData) {
         this.mContext = mContext;
@@ -76,7 +86,27 @@ public class CommentAdapter extends RecyclerView.Adapter<CommentAdapter.CommentV
             tv_content = itemView.findViewById(R.id.comment_content);
             tv_date = itemView.findViewById(R.id.comment_date);
 
+            firebaseDatabase = FirebaseDatabase.getInstance("https://blogapp-b229c-default-rtdb.europe-west1.firebasedatabase.app/");
 
+
+            itemView.setOnLongClickListener(v -> {
+                int position = getAdapterPosition();
+                AlertDialog.Builder builder = new AlertDialog.Builder(mContext);
+                builder.setTitle("Commento numero " + position)
+                        .setMessage("Sei sicuro di voler eliminare questo commento?")
+                        .setPositiveButton("Si", (dialog, which) -> {
+                            databaseReference = firebaseDatabase.getReference("Commenti/"+mData.get(position).getPostkey());
+                            databaseReference.child(mData
+                                    .get(position)
+                                    .getKey())
+                                    .removeValue();
+                            mData.remove(position);
+                            notifyDataSetChanged();
+
+
+                        }).setNegativeButton("No", (dialog, which) -> dialog.dismiss()).show();
+                return false;
+            });
         }
     }
 }
