@@ -67,13 +67,12 @@
             android:layout_marginStart="16dp"
             android:layout_marginTop="8dp"
             android:layout_marginEnd="8dp"
-            android:text="TextView"
+            android:text="10/10/10"
             android:textSize="12sp"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintHorizontal_bias="0.0"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/view"
-            tools:text="18 jan 2018 | by Arun Larrson " />
+            app:layout_constraintTop_toBottomOf="@+id/view"/>
 
         <TextView
 
@@ -138,10 +137,22 @@
             android:layout_width="20dp"
             android:layout_height="20dp"
             android:layout_marginStart="8dp"
+            android:layout_marginEnd="8dp"
             app:layout_constraintBottom_toBottomOf="@+id/post_detail_date_name"
+            app:layout_constraintEnd_toStartOf="@+id/post_detail_user_name"
             app:layout_constraintStart_toEndOf="@+id/post_detail_date_name"
             app:layout_constraintTop_toTopOf="@+id/post_detail_date_name"
             tools:srcCompat="@tools:sample/avatars" />
+
+        <TextView
+            android:id="@+id/post_detail_user_name"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="8dp"
+            android:text="nomenomenome"
+            app:layout_constraintBottom_toBottomOf="@+id/post_detail_user_img"
+            app:layout_constraintStart_toEndOf="@+id/post_detail_user_img"
+            app:layout_constraintTop_toTopOf="@+id/post_detail_user_img" />
 
         <androidx.recyclerview.widget.RecyclerView
             android:id="@+id/rv_comment"
@@ -150,7 +161,9 @@
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintHorizontal_bias="1.0"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/post_detail_comment" />
+            app:layout_constraintTop_toBottomOf="@+id/post_detail_comment" >
+
+        </androidx.recyclerview.widget.RecyclerView>
 
     </androidx.constraintlayout.widget.ConstraintLayout>
 

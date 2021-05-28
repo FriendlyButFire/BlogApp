@@ -202,7 +202,7 @@ public class Home extends AppCompatActivity {
                                                 popupDescription.getText().toString(),
                                                 imageDownloadLink, currentUser.getUid(),
                                                 currentUser.getPhotoUrl().toString()
-                                                //,currentUser.getDisplayName()
+                                                ,currentUser.getDisplayName()
                                         );
 
                                         //aggiungo il post al database
@@ -214,7 +214,7 @@ public class Home extends AppCompatActivity {
                                                 popupDescription.getText().toString(),
                                                 imageDownloadLink, currentUser.getUid(),
                                                 null
-                                                //,currentUser.getDisplayName()
+                                                ,currentUser.getDisplayName()
                                         );
 
                                         //aggiungo il post al database

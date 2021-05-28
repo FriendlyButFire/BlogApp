@@ -43,7 +43,7 @@ public class PostDetailActivity extends AppCompatActivity {
 
 
     ImageView imgPost, imgUserPost, imgCurrentUser;
-    TextView txtPostDesc, txtPostDateName, txtPostTitle;
+    TextView txtPostDesc, txtPostDateName, txtPostTitle,txtUserName;
     EditText editTextComment;
     Button btnAddComment;
     String postKey;
@@ -74,6 +74,7 @@ public class PostDetailActivity extends AppCompatActivity {
         RvComment = findViewById(R.id.rv_comment);
         imgPost = findViewById(R.id.post_detail_img);
         imgUserPost = findViewById(R.id.post_detail_user_img);
+        txtUserName = findViewById(R.id.post_detail_user_name);
         imgCurrentUser = findViewById(R.id.post_detail_currentuser_img);
 
         txtPostDesc = findViewById(R.id.post_detail_desc);
@@ -144,6 +145,9 @@ public class PostDetailActivity extends AppCompatActivity {
         else
             Glide.with(this).load(R.drawable.userphoto).apply(RequestOptions.circleCropTransform()).into(imgCurrentUser);
 
+        String username = getIntent().getExtras().getString("userName");
+        txtUserName.setText(username);
+
         //ottengo l'id del post
 
         postKey = getIntent().getExtras().getString("postKey");
@@ -151,6 +155,8 @@ public class PostDetailActivity extends AppCompatActivity {
         String date = timestampToString(getIntent().getExtras().getLong("postDate"));
 
         txtPostDateName.setText(date);
+
+
 
         //init recycleView Commenti
         initRvComment();
