@@ -10,8 +10,9 @@
         android:label="@string/app_name"
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
-        android:theme="@style/Theme.Blog">
-        <activity android:name=".Activities.PostDetailActivity"></activity>
+        android:theme="@style/Theme.Blog"
+        android:fullBackupContent="@xml/backup_descriptor">
+        <activity android:name=".Activities.PostDetailActivity" />
         <activity
             android:name=".Activities.Home"
             android:label="@string/title_activity_home"

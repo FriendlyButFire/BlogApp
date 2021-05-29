@@ -67,7 +67,8 @@
             app:layout_constraintBottom_toTopOf="@+id/change_pic_btn"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/user_auth_email" />
+            app:layout_constraintTop_toBottomOf="@+id/user_auth_email"
+            android:contentDescription="TODO" />
 
         <ProgressBar
             android:id="@+id/change_pic_bar"

@@ -19,7 +19,8 @@
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
-        app:srcCompat="@drawable/userphoto" />
+        app:srcCompat="@drawable/userphoto"
+        android:contentDescription="TODO" />
 
     <EditText
         android:id="@+id/login_mail"

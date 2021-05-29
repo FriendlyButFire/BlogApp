@@ -19,7 +19,6 @@ import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.AuthResult;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
-import com.google.firebase.storage.StorageReference;
 
 import it.edu.iisfalcone_righi.blog.R;
 
@@ -30,7 +29,6 @@ public class LoginActivity extends AppCompatActivity {
     private ProgressBar loginProgress;
     private FirebaseAuth mAuth;
     private Intent HomeActivity;
-    private ImageView loginPhoto;
 
 
     @Override
@@ -46,51 +44,42 @@ public class LoginActivity extends AppCompatActivity {
         loginProgress = findViewById(R.id.login_progress);
         mAuth = FirebaseAuth.getInstance();
         HomeActivity = new Intent(this,it.edu.iisfalcone_righi.blog.Activities.Home.class);
-        loginPhoto = findViewById(R.id.login_photo);
-        loginPhoto.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                Intent registerActivity = new Intent(getApplicationContext(), RegisterActivity.class);
-                startActivity(registerActivity);
-                finish();
-            }
+        ImageView loginPhoto = findViewById(R.id.login_photo);
+        loginPhoto.setOnClickListener(v -> {
+            Intent registerActivity = new Intent(getApplicationContext(), RegisterActivity.class);
+            startActivity(registerActivity);
+            finish();
         });
 
         loginProgress.setVisibility(View.INVISIBLE);
-        btnLogin.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                loginProgress.setVisibility(View.VISIBLE);
-                btnLogin.setVisibility(View.INVISIBLE);
+        btnLogin.setOnClickListener(v -> {
+            loginProgress.setVisibility(View.VISIBLE);
+            btnLogin.setVisibility(View.INVISIBLE);
 
-                final String mail = userMail.getText().toString();
-                final String password = userPassword.getText().toString();
+            final String mail = userMail.getText().toString();
+            final String password = userPassword.getText().toString();
 
-                if (mail.isEmpty() || password.isEmpty()) {
-                    showMessage("Assicurati di inserire tutti i dati.");
-                    btnLogin.setVisibility(View.VISIBLE);
-                    loginProgress.setVisibility(View.INVISIBLE);
-                }else {
-                    signIn(mail,password);
-                }
-
+            if (mail.isEmpty() || password.isEmpty()) {
+                showMessage("Assicurati di inserire tutti i dati.");
+                btnLogin.setVisibility(View.VISIBLE);
+                loginProgress.setVisibility(View.INVISIBLE);
+            }else {
+                signIn(mail,password);
             }
+
         });
     }
     //metodo per far il login
     private void signIn(String mail, String password) {
-        mAuth.signInWithEmailAndPassword(mail,password).addOnCompleteListener(new OnCompleteListener<AuthResult>() {
-            @Override
-            public void onComplete(@NonNull Task<AuthResult> task) {
-                if(task.isSuccessful()){
-                    loginProgress.setVisibility(View.INVISIBLE);
-                    btnLogin.setVisibility(View.VISIBLE);
-                    updateUI();
-                }else {
-                    showMessage(task.getException().getLocalizedMessage());
-                    btnLogin.setVisibility(View.VISIBLE);
-                    loginProgress.setVisibility(View.INVISIBLE);
-                }
+        mAuth.signInWithEmailAndPassword(mail,password).addOnCompleteListener(task -> {
+            if(task.isSuccessful()){
+                loginProgress.setVisibility(View.INVISIBLE);
+                btnLogin.setVisibility(View.VISIBLE);
+                updateUI();
+            }else {
+                showMessage(task.getException().getLocalizedMessage());
+                btnLogin.setVisibility(View.VISIBLE);
+                loginProgress.setVisibility(View.INVISIBLE);
             }
         });
     }

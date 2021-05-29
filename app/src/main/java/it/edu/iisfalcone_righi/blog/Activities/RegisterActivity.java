@@ -36,8 +36,8 @@ import it.edu.iisfalcone_righi.blog.R;
 
 public class RegisterActivity extends AppCompatActivity {
 
-    static int pReqCode = 1;
-    static int reqCode = 1;
+    static final int pReqCode = 1;
+    static final int reqCode = 1;
     ImageView userPhoto;
     Uri pickedImgUri;
 
@@ -66,59 +66,50 @@ public class RegisterActivity extends AppCompatActivity {
         mAuth = FirebaseAuth.getInstance();
 
 
-        regBtn.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                regBtn.setVisibility(View.INVISIBLE);
-                loadingProgress.setVisibility(View.VISIBLE);
-                final String email = userEmail.getText().toString();
-                final String password = userPassword.getText().toString();
-                final String password2 = userPassword2.getText().toString();
-                final String name = userName.getText().toString();
+        regBtn.setOnClickListener(v -> {
+            regBtn.setVisibility(View.INVISIBLE);
+            loadingProgress.setVisibility(View.VISIBLE);
+            final String email = userEmail.getText().toString();
+            final String password = userPassword.getText().toString();
+            final String password2 = userPassword2.getText().toString();
+            final String name = userName.getText().toString();
 
-                if (email.isEmpty() || password.isEmpty() || password2.isEmpty() || name.isEmpty()) {
-                    showMessage("Assicurati di inserire tutti i dati.");
-                    regBtn.setVisibility(View.VISIBLE);
-                    loadingProgress.setVisibility(View.INVISIBLE);
+            if (email.isEmpty() || password.isEmpty() || password2.isEmpty() || name.isEmpty()) {
+                showMessage("Assicurati di inserire tutti i dati.");
+                regBtn.setVisibility(View.VISIBLE);
+                loadingProgress.setVisibility(View.INVISIBLE);
 
-                } else {
-                    CreateUserAccount(email, name, password);
-                }
+            } else {
+                CreateUserAccount(email, name, password);
             }
         });
 
 
         userPhoto = findViewById(R.id.regUserPhoto);
-        userPhoto.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                if (Build.VERSION.SDK_INT >= 22) {
-                    checkRequestPermission();
-                } else {
-                    openGallery();
-                }
+        userPhoto.setOnClickListener(v -> {
+            if (Build.VERSION.SDK_INT >= 22) {
+                checkRequestPermission();
+            } else {
+                openGallery();
             }
         });
     }
 
     private void CreateUserAccount(String email, String name, String password) {
-        mAuth.createUserWithEmailAndPassword(email, password).addOnCompleteListener(this, new OnCompleteListener<AuthResult>() {
-            @Override
-            public void onComplete(@NonNull Task<AuthResult> task) {
-                if (task.isSuccessful()) {
-                    //account creato
-                    showMessage("Account creato!");
-                    //controllo se l'utente ha scelto una foto:
-                    if(pickedImgUri!=null){
-                    //dopo la creazione imposto foto profilo e nome
-                    updateUserInfo(name, pickedImgUri, mAuth.getCurrentUser());}
-                    else updateUserInfoWithoutPhoto(name,mAuth.getCurrentUser());
-                } else {
-                    //account non creato
-                    showMessage("Creazione account fallita" + task.getException().getLocalizedMessage());
-                    regBtn.setVisibility(View.VISIBLE);
-                    loadingProgress.setVisibility(View.INVISIBLE);
-                }
+        mAuth.createUserWithEmailAndPassword(email, password).addOnCompleteListener(this, task -> {
+            if (task.isSuccessful()) {
+                //account creato
+                showMessage("Account creato!");
+                //controllo se l'utente ha scelto una foto:
+                if(pickedImgUri!=null){
+                //dopo la creazione imposto foto profilo e nome
+                updateUserInfo(name, pickedImgUri, mAuth.getCurrentUser());}
+                else updateUserInfoWithoutPhoto(name,mAuth.getCurrentUser());
+            } else {
+                //account non creato
+                showMessage("Creazione account fallita" + task.getException().getLocalizedMessage());
+                regBtn.setVisibility(View.VISIBLE);
+                loadingProgress.setVisibility(View.INVISIBLE);
             }
         });
     }
@@ -128,30 +119,21 @@ public class RegisterActivity extends AppCompatActivity {
         //carico la foto sullo storage di Firebase e chiedo l'url
         StorageReference mStorage = FirebaseStorage.getInstance().getReference().child("foto utenti");
         StorageReference imageFilePath = mStorage.child(pickedImgUri.getLastPathSegment());
-        imageFilePath.putFile(pickedImgUri).addOnSuccessListener(new OnSuccessListener<UploadTask.TaskSnapshot>() {
-            @Override
-            public void onSuccess(UploadTask.TaskSnapshot taskSnapshot) {
-                //immagine caricata, ora posso avere l'url
-                imageFilePath.getDownloadUrl().addOnSuccessListener(new OnSuccessListener<Uri>() {
-                    @Override
-                    public void onSuccess(Uri uri) {
-                        //l'url contiene l'immagine profilo dell'utente
-                        UserProfileChangeRequest profileUpdate = new UserProfileChangeRequest.Builder().setDisplayName(name).setPhotoUri(uri).build();
+        imageFilePath.putFile(pickedImgUri).addOnSuccessListener(taskSnapshot -> {
+            //immagine caricata, ora posso avere l'url
+            imageFilePath.getDownloadUrl().addOnSuccessListener(uri -> {
+                //l'url contiene l'immagine profilo dell'utente
+                UserProfileChangeRequest profileUpdate = new UserProfileChangeRequest.Builder().setDisplayName(name).setPhotoUri(uri).build();
 
-                        currentUser.updateProfile(profileUpdate).addOnCompleteListener(new OnCompleteListener<Void>() {
-                            @Override
-                            public void onComplete(@NonNull Task<Void> task) {
-                                if (task.isSuccessful()) {
-                                    //informazioni utente modificate
-                                    showMessage("Registrato con successo!");
-                                    updateUI();
-                                }
-                            }
-                        });
-
+                currentUser.updateProfile(profileUpdate).addOnCompleteListener(task -> {
+                    if (task.isSuccessful()) {
+                        //informazioni utente modificate
+                        showMessage("Registrato con successo!");
+                        updateUI();
                     }
                 });
-            }
+
+            });
         });
     }
 
@@ -159,14 +141,11 @@ public class RegisterActivity extends AppCompatActivity {
 
         UserProfileChangeRequest profileUpdate = new UserProfileChangeRequest.Builder().setDisplayName(name).build();
 
-        currentUser.updateProfile(profileUpdate).addOnCompleteListener(new OnCompleteListener<Void>() {
-            @Override
-            public void onComplete(@NonNull Task<Void> task) {
-                if (task.isSuccessful()) {
-                    //informazioni utente modificate
-                    showMessage("Registrato con successo!");
-                    updateUI();
-                }
+        currentUser.updateProfile(profileUpdate).addOnCompleteListener(task -> {
+            if (task.isSuccessful()) {
+                //informazioni utente modificate
+                showMessage("Registrato con successo!");
+                updateUI();
             }
         });
 

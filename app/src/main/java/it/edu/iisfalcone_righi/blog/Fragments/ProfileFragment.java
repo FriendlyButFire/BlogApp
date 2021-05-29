@@ -63,9 +63,7 @@ public class ProfileFragment extends Fragment {
     private static final int pReqCode = 3;
     private static final int reqCode = 3;
 
-    private String userId;
     private FirebaseAuth mAuth;
-    private TextView userAuthEmail;
     private ImageView userImage;
     private ProgressBar changeUserImgProgress;
     private TextView userName;
@@ -73,10 +71,6 @@ public class ProfileFragment extends Fragment {
     private ImageView selected_Pic;
 
     private Uri pickedImgUri = null;
-
-    // TODO: Rename and change types of parameters
-    private String mParam1;
-    private String mParam2;
 
     public ProfileFragment() {
         // Required empty public constructor
@@ -104,8 +98,9 @@ public class ProfileFragment extends Fragment {
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         if (getArguments() != null) {
-            mParam1 = getArguments().getString(ARG_PARAM1);
-            mParam2 = getArguments().getString(ARG_PARAM2);
+            // TODO: Rename and change types of parameters
+            String mParam1 = getArguments().getString(ARG_PARAM1);
+            String mParam2 = getArguments().getString(ARG_PARAM2);
         }
     }
 
@@ -116,7 +111,7 @@ public class ProfileFragment extends Fragment {
         View view = inflater.inflate(R.layout.fragment_profile, container, false);
 
         selected_Pic = view.findViewById(R.id.selected_pic);
-        userAuthEmail = view.findViewById(R.id.user_auth_email);
+        TextView userAuthEmail = view.findViewById(R.id.user_auth_email);
         userName = view.findViewById(R.id.account_user_name_text_view);
         userImage = view.findViewById(R.id.account_user_image_view);
         changeUserImgBtn = view.findViewById(R.id.change_pic_btn);
@@ -129,7 +124,7 @@ public class ProfileFragment extends Fragment {
         mAuth = FirebaseAuth.getInstance();
         FirebaseUser user = mAuth.getCurrentUser();
         if (user != null) {
-            userId = user.getUid();
+            String userId = user.getUid();
             userAuthEmail.setText(user.getEmail());
             userName.setText(user.getDisplayName());
             //con Glide carico l'immagine
@@ -140,35 +135,27 @@ public class ProfileFragment extends Fragment {
 
         }
 
-        selected_Pic.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                checkRequestPermission();
-            }
-        });
+        selected_Pic.setOnClickListener(v -> checkRequestPermission());
 
-        changeUserImgBtn.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
+        changeUserImgBtn.setOnClickListener(v -> {
 
-                changeUserImgBtn.setVisibility(View.INVISIBLE);
-                changeUserImgProgress.setVisibility(View.VISIBLE);
+            changeUserImgBtn.setVisibility(View.INVISIBLE);
+            changeUserImgProgress.setVisibility(View.VISIBLE);
 
-                if(pickedImgUri==null){
-                    showMessage("Seleziona prima un'immagine");
-                    changeUserImgBtn.setVisibility(View.VISIBLE);
-                    changeUserImgProgress.setVisibility(View.INVISIBLE);
+            if(pickedImgUri==null){
+                showMessage("Seleziona prima un'immagine");
+                changeUserImgBtn.setVisibility(View.VISIBLE);
+                changeUserImgProgress.setVisibility(View.INVISIBLE);
 
-                }else {
+            }else {
 
-                    updateUserInfo(userName.getText().toString(), pickedImgUri, mAuth.getCurrentUser());
+                updateUserInfo(userName.getText().toString(), pickedImgUri, mAuth.getCurrentUser());
 
 
-                    if (user.getPhotoUrl() != null)
-                        Glide.with(FragmentManager.findFragment(v)).load(pickedImgUri).apply(RequestOptions.circleCropTransform()).into(userImage);
-                    else
-                        Glide.with(FragmentManager.findFragment(v)).load(R.drawable.userphoto).apply(RequestOptions.circleCropTransform()).into(userImage);
-                }
+                if (user.getPhotoUrl() != null)
+                    Glide.with(FragmentManager.findFragment(v)).load(pickedImgUri).apply(RequestOptions.circleCropTransform()).into(userImage);
+                else
+                    Glide.with(FragmentManager.findFragment(v)).load(R.drawable.userphoto).apply(RequestOptions.circleCropTransform()).into(userImage);
             }
         });
 
@@ -180,85 +167,73 @@ public class ProfileFragment extends Fragment {
         //carico la foto sullo storage di Firebase e chiedo l'url
         StorageReference mStorage = FirebaseStorage.getInstance().getReference().child("foto utenti");
         StorageReference imageFilePath = mStorage.child(pickedImgUri.getLastPathSegment());
-        imageFilePath.putFile(pickedImgUri).addOnSuccessListener(new OnSuccessListener<UploadTask.TaskSnapshot>() {
-            @Override
-            public void onSuccess(UploadTask.TaskSnapshot taskSnapshot) {
-                //immagine caricata, ora posso avere l'url
-                imageFilePath.getDownloadUrl().addOnSuccessListener(new OnSuccessListener<Uri>() {
+        imageFilePath.putFile(pickedImgUri).addOnSuccessListener(taskSnapshot -> {
+            //immagine caricata, ora posso avere l'url
+            imageFilePath.getDownloadUrl().addOnSuccessListener(uri -> {
+                //l'url contiene l'immagine profilo dell'utente
+                UserProfileChangeRequest profileUpdate = new UserProfileChangeRequest.Builder().setDisplayName(name).setPhotoUri(uri).build();
+
+                currentUser.updateProfile(profileUpdate).addOnCompleteListener(task -> {
+                    if (task.isSuccessful()) {
+                        //informazioni utente modificate
+                        showMessage("Immagine aggiornata!");
+                        changeUserImgBtn.setVisibility(View.VISIBLE);
+                        changeUserImgProgress.setVisibility(View.INVISIBLE);
+
+                    } else {
+                        showMessage("Cambio immagine fallita" + task.getException().getLocalizedMessage());
+                        changeUserImgBtn.setVisibility(View.VISIBLE);
+                        changeUserImgProgress.setVisibility(View.INVISIBLE);
+                    }
+                });
+
+                //cambio l'immagine a tutti i post dell'utente che ha richiesto la modifica
+                String uid = FirebaseAuth.getInstance().getCurrentUser().getUid();
+                DatabaseReference rootRef = FirebaseDatabase.getInstance("https://blogapp-b229c-default-rtdb.europe-west1.firebasedatabase.app/").getReference();
+                DatabaseReference postsRef = rootRef.child("Post");
+                Query query = postsRef
+                        .orderByChild("userId").equalTo(uid);
+
+                query.addListenerForSingleValueEvent(new ValueEventListener() {
                     @Override
-                    public void onSuccess(Uri uri) {
-                        //l'url contiene l'immagine profilo dell'utente
-                        UserProfileChangeRequest profileUpdate = new UserProfileChangeRequest.Builder().setDisplayName(name).setPhotoUri(uri).build();
+                    public void onDataChange(DataSnapshot snapshot) {
+                        for (DataSnapshot ds : snapshot.getChildren()) {
+                            ds.child("userPhoto")
+                                    .getRef()
+                                    .setValue(uri.toString());
+                        }
+                    }
 
-                        currentUser.updateProfile(profileUpdate).addOnCompleteListener(new OnCompleteListener<Void>() {
-                            @Override
-                            public void onComplete(@NonNull Task<Void> task) {
-                                if (task.isSuccessful()) {
-                                    //informazioni utente modificate
-                                    showMessage("Immagine aggiornata!");
-                                    changeUserImgBtn.setVisibility(View.VISIBLE);
-                                    changeUserImgProgress.setVisibility(View.INVISIBLE);
+                    @Override
+                    public void onCancelled(@NonNull DatabaseError error) {
+                        Log.d("ERRORE", error.getMessage()); //Don't ignore errors!
+                    }
+                });
 
-                                } else {
-                                    showMessage("Cambio immagine fallita" + task.getException().getLocalizedMessage());
-                                    changeUserImgBtn.setVisibility(View.VISIBLE);
-                                    changeUserImgProgress.setVisibility(View.INVISIBLE);
-                                }
-                            }
-                        });
 
-                        //cambio l'immagine a tutti i post dell'utente che ha richiesto la modifica
-                        String uid = FirebaseAuth.getInstance().getCurrentUser().getUid();
-                        DatabaseReference rootRef = FirebaseDatabase.getInstance("https://blogapp-b229c-default-rtdb.europe-west1.firebasedatabase.app/").getReference();
-                        DatabaseReference postsRef = rootRef.child("Post");
-                        Query query = postsRef
-                                .orderByChild("userId").equalTo(uid);
-
-                        DatabaseReference commentRef = rootRef.child("Commenti");
-                        Query query2 = commentRef;
-
-                        query.addListenerForSingleValueEvent(new ValueEventListener() {
-                            @Override
-                            public void onDataChange(DataSnapshot snapshot) {
-                                for (DataSnapshot ds : snapshot.getChildren()) {
-                                    ds.child("userPhoto")
+                rootRef.child("Commenti").addListenerForSingleValueEvent(new ValueEventListener() {
+                    @Override
+                    public void onDataChange(@NonNull @NotNull DataSnapshot snapshot) {
+                        for (DataSnapshot ds : snapshot.getChildren()) {
+                            for (DataSnapshot dataSnapshot : ds.getChildren()) {
+                                if (dataSnapshot.child("userId").getValue().equals(uid)) {
+                                    dataSnapshot.child("userImg")
                                             .getRef()
                                             .setValue(uri.toString());
                                 }
                             }
+                        }
+                    }
 
-                            @Override
-                            public void onCancelled(@NonNull DatabaseError error) {
-                                Log.d("ERRORE", error.getMessage()); //Don't ignore errors!
-                            }
-                        });
-
-
-                        query2.addListenerForSingleValueEvent(new ValueEventListener() {
-                            @Override
-                            public void onDataChange(@NonNull @NotNull DataSnapshot snapshot) {
-                                for (DataSnapshot ds : snapshot.getChildren()) {
-                                    for (DataSnapshot dataSnapshot : ds.getChildren()) {
-                                        if (dataSnapshot.child("userId").getValue().equals(uid)) {
-                                            dataSnapshot.child("userImg")
-                                                    .getRef()
-                                                    .setValue(uri.toString());
-                                        }
-                                    }
-                                }
-                            }
-
-                            @Override
-                            public void onCancelled(@NonNull @NotNull DatabaseError error) {
-                                Log.d("", error.getMessage()); //Don't ignore errors!
-                            }
-                        });
-
-                        updateNavHeader();
-
+                    @Override
+                    public void onCancelled(@NonNull @NotNull DatabaseError error) {
+                        Log.d("", error.getMessage()); //Don't ignore errors!
                     }
                 });
-            }
+
+                updateNavHeader();
+
+            });
         });
     }
 
@@ -273,22 +248,19 @@ public class ProfileFragment extends Fragment {
 
         FirebaseAuth auth = FirebaseAuth.getInstance();
 
-        auth.getCurrentUser().reload().addOnSuccessListener(new OnSuccessListener<Void>() {
-            @Override
-            public void onSuccess(Void unused) {
-                FirebaseUser user = auth.getCurrentUser();
+        auth.getCurrentUser().reload().addOnSuccessListener(unused -> {
+            FirebaseUser user = auth.getCurrentUser();
 
-                navUserMail.setText(user.getEmail());
-                navUsername.setText(user.getDisplayName());
+            navUserMail.setText(user.getEmail());
+            navUsername.setText(user.getDisplayName());
 
-                //con Glide carico l'immagine
-                if (user.getPhotoUrl() != null)
-                    Glide.with(getActivity().getApplicationContext()).load(user.getPhotoUrl()).apply(RequestOptions.circleCropTransform()).into(navUserPhoto);
-                else
-                    Glide.with(getActivity().getApplicationContext()).load(R.drawable.userphoto).apply(RequestOptions.circleCropTransform()).into(navUserPhoto);
+            //con Glide carico l'immagine
+            if (user.getPhotoUrl() != null)
+                Glide.with(getActivity().getApplicationContext()).load(user.getPhotoUrl()).apply(RequestOptions.circleCropTransform()).into(navUserPhoto);
+            else
+                Glide.with(getActivity().getApplicationContext()).load(R.drawable.userphoto).apply(RequestOptions.circleCropTransform()).into(navUserPhoto);
 
 
-            }
         });
     }
 

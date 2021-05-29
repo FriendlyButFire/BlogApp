@@ -24,7 +24,8 @@
             app:layout_constraintHorizontal_bias="0.0"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent"
-            app:srcCompat="@drawable/side_nav_bar" />
+            app:srcCompat="@drawable/side_nav_bar"
+            android:contentDescription="TODO" />
 
         <TextView
 
@@ -99,7 +100,8 @@
             android:layout_marginTop="24dp"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@+id/post_detail_desc"
-            tools:srcCompat="@tools:sample/avatars" />
+            tools:srcCompat="@tools:sample/avatars"
+            android:contentDescription="TODO" />
 
         <EditText
 
@@ -142,7 +144,8 @@
             app:layout_constraintEnd_toStartOf="@+id/post_detail_user_name"
             app:layout_constraintStart_toEndOf="@+id/post_detail_date_name"
             app:layout_constraintTop_toTopOf="@+id/post_detail_date_name"
-            tools:srcCompat="@tools:sample/avatars" />
+            tools:srcCompat="@tools:sample/avatars"
+            android:contentDescription="TODO" />
 
         <TextView
             android:id="@+id/post_detail_user_name"

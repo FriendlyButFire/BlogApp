@@ -15,7 +15,8 @@
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
-        app:srcCompat="@drawable/side_nav_bar" />
+        app:srcCompat="@drawable/side_nav_bar"
+        android:contentDescription="TODO" />
 
     <ImageView
         android:id="@+id/blackgradient"
@@ -24,7 +25,8 @@
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:srcCompat="@drawable/black_gradient" />
+        app:srcCompat="@drawable/black_gradient"
+        android:contentDescription="TODO" />
 
     <TextView
         android:textSize="20sp"
@@ -51,5 +53,6 @@
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintTop_toTopOf="@+id/blackgradient"
-        tools:srcCompat="@tools:sample/avatars" />
+        tools:srcCompat="@tools:sample/avatars"
+        android:contentDescription="TODO" />
 </androidx.constraintlayout.widget.ConstraintLayout>

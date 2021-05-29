@@ -1,10 +1,5 @@
 package it.edu.iisfalcone_righi.blog.Activities;
 
-import androidx.annotation.NonNull;
-import androidx.appcompat.app.AppCompatActivity;
-import androidx.recyclerview.widget.LinearLayoutManager;
-import androidx.recyclerview.widget.RecyclerView;
-
 import android.os.Bundle;
 import android.text.format.DateFormat;
 import android.view.View;
@@ -16,10 +11,13 @@ import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import androidx.annotation.NonNull;
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
+
 import com.bumptech.glide.Glide;
 import com.bumptech.glide.request.RequestOptions;
-import com.google.android.gms.tasks.OnFailureListener;
-import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.database.DataSnapshot;
@@ -43,7 +41,7 @@ public class PostDetailActivity extends AppCompatActivity {
 
 
     ImageView imgPost, imgUserPost, imgCurrentUser;
-    TextView txtPostDesc, txtPostDateName, txtPostTitle,txtUserName;
+    TextView txtPostDesc, txtPostDateName, txtPostTitle, txtUserName;
     EditText editTextComment;
     Button btnAddComment;
     String postKey;
@@ -92,33 +90,29 @@ public class PostDetailActivity extends AppCompatActivity {
 
         //Aggiungo il tasto commenta
 
-        btnAddComment.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                btnAddComment.setVisibility(View.INVISIBLE);
-                DatabaseReference commentReference = firebaseDatabase.getReference("Commenti").child(postKey).push();
-                String comment_content = editTextComment.getText().toString();
-                String userId = firebaseUser.getUid();
-                String userName = firebaseUser.getDisplayName();
-                String userImg = firebaseUser.getPhotoUrl().toString();
+        btnAddComment.setOnClickListener(v -> {
+            btnAddComment.setVisibility(View.INVISIBLE);
+            DatabaseReference commentReference = firebaseDatabase.getReference("Commenti").child(postKey).push();
+            String comment_content = editTextComment.getText().toString();
+            String userId = firebaseUser.getUid();
+            String userName = firebaseUser.getDisplayName();
+            String userImg = firebaseUser.getPhotoUrl().toString();
+            if (!comment_content.isEmpty()) {
+
+
                 Comment comment = new Comment(comment_content, userId, userImg, userName);
                 String key = commentReference.getKey();
                 comment.setKey(key);
                 comment.setPostkey(postKey);
 
-                commentReference.setValue(comment).addOnSuccessListener(new OnSuccessListener<Void>() {
-                    @Override
-                    public void onSuccess(Void unused) {
-                        showMessage("Commento inserito!");
-                        editTextComment.setText("");
-                        btnAddComment.setVisibility(View.VISIBLE);
-                    }
-                }).addOnFailureListener(new OnFailureListener() {
-                    @Override
-                    public void onFailure(@NonNull @NotNull Exception e) {
-                        showMessage("Commento non inserito: " + e.getLocalizedMessage());
-                    }
-                });
+                commentReference.setValue(comment).addOnSuccessListener(unused -> {
+                    showMessage("Commento inserito!");
+                    editTextComment.setText("");
+                    btnAddComment.setVisibility(View.VISIBLE);
+                }).addOnFailureListener(e -> showMessage("Commento non inserito: " + e.getLocalizedMessage()));
+            } else {
+                showMessage("Il commento non può essere vuoto");
+                btnAddComment.setVisibility(View.VISIBLE);
             }
         });
 
@@ -157,7 +151,6 @@ public class PostDetailActivity extends AppCompatActivity {
         txtPostDateName.setText(date);
 
 
-
         //init recycleView Commenti
         initRvComment();
 
@@ -188,8 +181,7 @@ public class PostDetailActivity extends AppCompatActivity {
     private String timestampToString(long time) {
         Calendar calendar = Calendar.getInstance(Locale.ITALIAN);
         calendar.setTimeInMillis(time);
-        String date = DateFormat.format("dd-MM-yyyy", calendar).toString();
-        return date;
+        return DateFormat.format("dd-MM-yyyy", calendar).toString();
     }
 
     //metodo veloce per visualizzare messaggi

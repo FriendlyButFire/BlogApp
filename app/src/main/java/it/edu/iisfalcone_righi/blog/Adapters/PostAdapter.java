@@ -30,8 +30,8 @@ import it.edu.iisfalcone_righi.blog.R;
 
 public class PostAdapter extends RecyclerView.Adapter<PostAdapter.PostViewHolder> {
 
-    Context mContext;
-    List<Post> mData;
+    final Context mContext;
+    final List<Post> mData;
     FirebaseDatabase firebaseDatabase;
     DatabaseReference databaseReference;
 
@@ -66,9 +66,9 @@ public class PostAdapter extends RecyclerView.Adapter<PostAdapter.PostViewHolder
     }
 
     public class PostViewHolder extends RecyclerView.ViewHolder {
-        TextView tvTitle;
-        ImageView imgPost;
-        ImageView imgPostProfile;
+        final TextView tvTitle;
+        final ImageView imgPost;
+        final ImageView imgPostProfile;
 
         public PostViewHolder(View itemView) {
             super(itemView);
@@ -92,17 +92,7 @@ public class PostAdapter extends RecyclerView.Adapter<PostAdapter.PostViewHolder
                                     get(position).
                                     getKey())
                                     .removeValue()
-                                    .addOnSuccessListener(new OnSuccessListener<Void>() {
-                                @Override
-                                public void onSuccess(Void unused) {
-                                    Toast.makeText(mContext, "Post eliminato con successo!", Toast.LENGTH_LONG).show();
-                                }
-                            }).addOnFailureListener(new OnFailureListener() {
-                                @Override
-                                public void onFailure(@NonNull @NotNull Exception e) {
-                                    Toast.makeText(mContext, e.getLocalizedMessage(), Toast.LENGTH_LONG).show();
-                                }
-                            });
+                                    .addOnSuccessListener(unused -> Toast.makeText(mContext, "Post eliminato con successo!", Toast.LENGTH_LONG).show()).addOnFailureListener(e -> Toast.makeText(mContext, e.getLocalizedMessage(), Toast.LENGTH_LONG).show());
 
                             mData.remove(position);
                             notifyDataSetChanged();

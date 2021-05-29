@@ -31,6 +31,6 @@
         android:layout_margin="@dimen/fab_margin"
         app:srcCompat="@drawable/ic_baseline_create_24"
         app:layout_behavior="com.google.android.material.behavior.HideBottomViewOnScrollBehavior"
-        />
+        android:contentDescription="TODO" />
 
 </androidx.coordinatorlayout.widget.CoordinatorLayout>

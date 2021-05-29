@@ -10,7 +10,6 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.view.Gravity;
 import android.view.Menu;
-import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.ImageView;
@@ -49,7 +48,6 @@ import org.jetbrains.annotations.NotNull;
 
 import it.edu.iisfalcone_righi.blog.Fragments.HomeFragment;
 import it.edu.iisfalcone_righi.blog.Fragments.ProfileFragment;
-import it.edu.iisfalcone_righi.blog.Fragments.SettingsFragment;
 import it.edu.iisfalcone_righi.blog.Models.Post;
 import it.edu.iisfalcone_righi.blog.R;
 
@@ -99,32 +97,29 @@ public class Home extends AppCompatActivity {
         NavigationUI.setupActionBarWithNavController(this, navController, mAppBarConfiguration);
         NavigationUI.setupWithNavController(navigationView, navController);
 
-        navigationView.setNavigationItemSelectedListener(new NavigationView.OnNavigationItemSelectedListener() {
-            @Override
-            public boolean onNavigationItemSelected(@NonNull MenuItem item) {
-                int id = item.getItemId();
-                switch (id) {
-                    case R.id.nav_home:
-                        getSupportActionBar().setTitle(R.string.nav_home);
-                        fab.setVisibility(View.VISIBLE);
-                        getSupportFragmentManager().beginTransaction().replace(R.id.nav_host_fragment, new HomeFragment()).commit();
-                        break;
-                    case R.id.nav_profile:
-                        getSupportActionBar().setTitle(R.string.nav_profile);
-                        fab.setVisibility(View.INVISIBLE);
-                        getSupportFragmentManager().beginTransaction().replace(R.id.nav_host_fragment, new ProfileFragment()).commit();
-                        break;
-                    case R.id.nav_signout:
-                        FirebaseAuth.getInstance().signOut();
-                        Intent loginActivity = new Intent(getApplicationContext(), LoginActivity.class);
-                        startActivity(loginActivity);
-                        finish();
-                        break;
+        navigationView.setNavigationItemSelectedListener(item -> {
+            int id = item.getItemId();
+            switch (id) {
+                case R.id.nav_home:
+                    getSupportActionBar().setTitle(R.string.nav_home);
+                    fab.setVisibility(View.VISIBLE);
+                    getSupportFragmentManager().beginTransaction().replace(R.id.nav_host_fragment, new HomeFragment()).commit();
+                    break;
+                case R.id.nav_profile:
+                    getSupportActionBar().setTitle(R.string.nav_profile);
+                    fab.setVisibility(View.INVISIBLE);
+                    getSupportFragmentManager().beginTransaction().replace(R.id.nav_host_fragment, new ProfileFragment()).commit();
+                    break;
+                case R.id.nav_signout:
+                    FirebaseAuth.getInstance().signOut();
+                    Intent loginActivity = new Intent(getApplicationContext(), LoginActivity.class);
+                    startActivity(loginActivity);
+                    finish();
+                    break;
 
-                }
-                drawer.closeDrawer(GravityCompat.START);
-                return true;
             }
+            drawer.closeDrawer(GravityCompat.START);
+            return true;
         });
 
         updateNavHeader();
@@ -174,75 +169,61 @@ public class Home extends AppCompatActivity {
 
         //aggiungo un listener
 
-        popupAddBtn.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                popupAddBtn.setVisibility(View.INVISIBLE);
-                popupClickProgress.setVisibility(View.VISIBLE);
+        popupAddBtn.setOnClickListener(v -> {
+            popupAddBtn.setVisibility(View.INVISIBLE);
+            popupClickProgress.setVisibility(View.VISIBLE);
 
-                //test titolo e desc
+            //test titolo e desc
 
-                if (!popupTitle.getText().toString().isEmpty() && !popupDescription.getText().toString().isEmpty() && pickedImgUri != null) {
-                    //tutto ok
-                    //accedo allo storage di firebase per l'immagine scelta
+            if (!popupTitle.getText().toString().isEmpty() && !popupDescription.getText().toString().isEmpty() && pickedImgUri != null) {
+                //tutto ok
+                //accedo allo storage di firebase per l'immagine scelta
 
-                    StorageReference storageReference = FirebaseStorage.getInstance().getReference().child("immagini_blog");
-                    StorageReference imageFilePath = storageReference.child(pickedImgUri.getLastPathSegment());
-                    imageFilePath.putFile(pickedImgUri).addOnSuccessListener(new OnSuccessListener<UploadTask.TaskSnapshot>() {
-                        @Override
-                        public void onSuccess(UploadTask.TaskSnapshot taskSnapshot) {
-                            imageFilePath.getDownloadUrl().addOnSuccessListener(new OnSuccessListener<Uri>() {
-                                @Override
-                                public void onSuccess(Uri uri) {
-                                    String imageDownloadLink = uri.toString();
-                                    //creo l'oggetto post
+                StorageReference storageReference = FirebaseStorage.getInstance().getReference().child("immagini_blog");
+                StorageReference imageFilePath = storageReference.child(pickedImgUri.getLastPathSegment());
+                imageFilePath.putFile(pickedImgUri).addOnSuccessListener(taskSnapshot -> imageFilePath.getDownloadUrl().addOnSuccessListener(uri -> {
+                    String imageDownloadLink = uri.toString();
+                    //creo l'oggetto post
 
-                                    if (currentUser.getPhotoUrl() != null) {
-                                        Post post = new Post(popupTitle.getText().toString(),
-                                                popupDescription.getText().toString(),
-                                                imageDownloadLink, currentUser.getUid(),
-                                                currentUser.getPhotoUrl().toString()
-                                                ,currentUser.getDisplayName()
-                                        );
+                    if (currentUser.getPhotoUrl() != null) {
+                        Post post = new Post(popupTitle.getText().toString(),
+                                popupDescription.getText().toString(),
+                                imageDownloadLink, currentUser.getUid(),
+                                currentUser.getPhotoUrl().toString()
+                                , currentUser.getDisplayName()
+                        );
 
-                                        //aggiungo il post al database
+                        //aggiungo il post al database
 
-                                        addPost(post);
+                        addPost(post);
 
-                                    } else {
-                                        Post post = new Post(popupTitle.getText().toString(),
-                                                popupDescription.getText().toString(),
-                                                imageDownloadLink, currentUser.getUid(),
-                                                null
-                                                ,currentUser.getDisplayName()
-                                        );
+                    } else {
+                        Post post = new Post(popupTitle.getText().toString(),
+                                popupDescription.getText().toString(),
+                                imageDownloadLink, currentUser.getUid(),
+                                null
+                                , currentUser.getDisplayName()
+                        );
 
-                                        //aggiungo il post al database
+                        //aggiungo il post al database
 
-                                        addPost(post);
+                        addPost(post);
 
-                                    }
+                    }
 
 
-                                }
-                            }).addOnFailureListener(new OnFailureListener() {
-                                @Override
-                                public void onFailure(@NonNull @NotNull Exception e) {
-                                    //qualcosa non va con la foto
-                                    showMessage(e.getLocalizedMessage());
-                                    popupClickProgress.setVisibility(View.INVISIBLE);
-                                    popupAddBtn.setVisibility(View.VISIBLE);
-                                }
-                            });
-                        }
-                    });
-
-
-                } else {
-                    showMessage("Assicurati di inserire tutti i dati e di scegliere un immagine");
-                    popupAddBtn.setVisibility(View.VISIBLE);
+                }).addOnFailureListener(e -> {
+                    //qualcosa non va con la foto
+                    showMessage(e.getLocalizedMessage());
                     popupClickProgress.setVisibility(View.INVISIBLE);
-                }
+                    popupAddBtn.setVisibility(View.VISIBLE);
+                }));
+
+
+            } else {
+                showMessage("Assicurati di inserire tutti i dati e di scegliere un immagine");
+                popupAddBtn.setVisibility(View.VISIBLE);
+                popupClickProgress.setVisibility(View.INVISIBLE);
             }
         });
     }
@@ -263,34 +244,28 @@ public class Home extends AppCompatActivity {
 
         FirebaseAuth auth = FirebaseAuth.getInstance();
 
-        auth.getCurrentUser().reload().addOnSuccessListener(new OnSuccessListener<Void>() {
-            @Override
-            public void onSuccess(Void unused) {
-                FirebaseUser user = auth.getCurrentUser();
+        auth.getCurrentUser().reload().addOnSuccessListener(unused -> {
+            FirebaseUser user = auth.getCurrentUser();
 
-                navUserMail.setText(user.getEmail());
-                navUsername.setText(user.getDisplayName());
+            navUserMail.setText(user.getEmail());
+            navUsername.setText(user.getDisplayName());
 
-                //con Glide carico l'immagine
-                if (user.getPhotoUrl() != null)
-                    Glide.with(getApplicationContext()).load(user.getPhotoUrl()).apply(RequestOptions.circleCropTransform()).into(navUserPhoto);
-                else
-                    Glide.with(getApplicationContext()).load(R.drawable.userphoto).apply(RequestOptions.circleCropTransform()).into(navUserPhoto);
+            //con Glide carico l'immagine
+            if (user.getPhotoUrl() != null)
+                Glide.with(getApplicationContext()).load(user.getPhotoUrl()).apply(RequestOptions.circleCropTransform()).into(navUserPhoto);
+            else
+                Glide.with(getApplicationContext()).load(R.drawable.userphoto).apply(RequestOptions.circleCropTransform()).into(navUserPhoto);
 
 
-            }
         });
 
 
     }
 
     private void setupPopupImageClick() {
-        popupPostImage.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                //quando clicco l'immagine apre la galleria; prima però vedo se ho i permessi
-                checkRequestPermission();
-            }
+        popupPostImage.setOnClickListener(v -> {
+            //quando clicco l'immagine apre la galleria; prima però vedo se ho i permessi
+            checkRequestPermission();
         });
     }
 
@@ -334,18 +309,15 @@ public class Home extends AppCompatActivity {
 
         //aggiungo i dati al database di firebase
 
-        ref.setValue(post).addOnSuccessListener(new OnSuccessListener<Void>() {
-            @Override
-            public void onSuccess(Void unused) {
-                showMessage("Post aggiunto con successo!");
-                popupClickProgress.setVisibility(View.INVISIBLE);
-                popupAddBtn.setVisibility(View.VISIBLE);
+        ref.setValue(post).addOnSuccessListener(unused -> {
+            showMessage("Post aggiunto con successo!");
+            popupClickProgress.setVisibility(View.INVISIBLE);
+            popupAddBtn.setVisibility(View.VISIBLE);
 
-                popAddPost.setContentView(R.layout.popup_add_post);
-                popAddPost.dismiss();
+            popAddPost.setContentView(R.layout.popup_add_post);
+            popAddPost.dismiss();
 
-                pickedImgUri = null;
-            }
+            pickedImgUri = null;
         });
 
 
