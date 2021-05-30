@@ -17,15 +17,15 @@
 
         <ImageView
             android:id="@+id/post_detail_img"
-            android:layout_width="0dp"
+            android:layout_width="fill_parent"
             android:layout_height="250dp"
+            android:contentDescription="TODO"
             android:scaleType="centerCrop"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintHorizontal_bias="0.0"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent"
-            app:srcCompat="@drawable/side_nav_bar"
-            android:contentDescription="TODO" />
+            app:srcCompat="@drawable/side_nav_bar" />
 
         <TextView
 

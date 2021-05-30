@@ -1,6 +1,8 @@
 package it.edu.iisfalcone_righi.blog.Activities;
 
 import android.os.Bundle;
+import android.text.Html;
+import android.text.TextUtils;
 import android.text.format.DateFormat;
 import android.view.View;
 import android.view.Window;
@@ -119,7 +121,7 @@ public class PostDetailActivity extends AppCompatActivity {
         //ottengo i dati del post per collegarli alle view sopra
 
         String postImage = getIntent().getExtras().getString("postImage");
-        Glide.with(this).load(postImage).into(imgPost);
+        Glide.with(this).load(postImage).centerCrop().into(imgPost);
 
         String title = getIntent().getExtras().getString("title");
         txtPostTitle.setText(title);
@@ -131,7 +133,7 @@ public class PostDetailActivity extends AppCompatActivity {
             Glide.with(this).load(R.drawable.userphoto).apply(RequestOptions.circleCropTransform()).into(imgUserPost);
 
         String description = getIntent().getExtras().getString("description");
-        txtPostDesc.setText(description);
+        txtPostDesc.setText(Html.fromHtml(description));
 
         //imposto l'immagine dell'utente che commenta
         if (firebaseUser.getPhotoUrl() != null)

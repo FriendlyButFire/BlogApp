@@ -1,6 +1,5 @@
 package it.edu.iisfalcone_righi.blog.Activities;
 
-import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.app.AppCompatDelegate;
 
@@ -14,9 +13,6 @@ import android.widget.ProgressBar;
 import android.widget.Toast;
 
 
-import com.google.android.gms.tasks.OnCompleteListener;
-import com.google.android.gms.tasks.Task;
-import com.google.firebase.auth.AuthResult;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 
@@ -43,12 +39,11 @@ public class LoginActivity extends AppCompatActivity {
         btnLogin = findViewById(R.id.loginBtn);
         loginProgress = findViewById(R.id.login_progress);
         mAuth = FirebaseAuth.getInstance();
-        HomeActivity = new Intent(this,it.edu.iisfalcone_righi.blog.Activities.Home.class);
+        HomeActivity = new Intent(this, it.edu.iisfalcone_righi.blog.Activities.HomeActivity.class);
         ImageView loginPhoto = findViewById(R.id.login_photo);
         loginPhoto.setOnClickListener(v -> {
             Intent registerActivity = new Intent(getApplicationContext(), RegisterActivity.class);
             startActivity(registerActivity);
-            finish();
         });
 
         loginProgress.setVisibility(View.INVISIBLE);
